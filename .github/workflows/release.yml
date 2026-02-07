@@ -23,7 +23,7 @@ on:
         default: none
       dry-run:
         type: boolean
-        description: Preview release without publishing
+        description: Dry run
         default: true
 
 permissions:
