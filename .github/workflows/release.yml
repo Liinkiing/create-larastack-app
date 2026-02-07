@@ -70,7 +70,6 @@ jobs:
       - name: Run release-it
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           INPUT_BUMP: ${{ inputs.bump }}
           INPUT_PRERELEASE: ${{ inputs.prerelease }}
           INPUT_DRY_RUN: ${{ inputs['dry-run'] }}
@@ -89,10 +88,6 @@ jobs:
 
           if [ "$INPUT_DRY_RUN" = "true" ]; then
             args+=("--dry-run")
-          fi
-
-          if [ -n "$NPM_TOKEN" ]; then
-            export NODE_AUTH_TOKEN="$NPM_TOKEN"
           fi
 
           pnpm exec release-it "${args[@]}"

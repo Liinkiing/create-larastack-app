@@ -108,7 +108,7 @@ Conventional Commit bump rules:
 
 If commits are only non-releasable types (`chore:`, `docs:`, `test:`...), use the workflow `bump` input to force a release.
 
-For npm auth, prefer npm Trusted Publishing (OIDC) for `.github/workflows/release.yml`. As a fallback, set `NPM_TOKEN` in repository secrets.
+For npm auth, this project uses npm Trusted Publishing (OIDC) in `.github/workflows/release.yml`.
 
 Because the package name is `create-larastack-app`, users can run the short create commands:
 
