@@ -12,10 +12,9 @@ describe('replacement entries', () => {
       githubUserLower: 'acmeorg',
       repositorySlug: 'acme-stack',
       mobileBundleId: 'com.acmeorg.acmestack',
-      easProjectId: 'eas-123',
     })
 
-    const input = 'Larastack :: larastack :: Liinkiing :: liinkiing :: com.liinkiing.larastack :: <project_id>'
+    const input = 'Larastack :: larastack :: Liinkiing :: liinkiing :: com.liinkiing.larastack'
     const output = applyReplacements(input, entries)
 
     expect(output).toContain('Acme Stack')
@@ -23,6 +22,5 @@ describe('replacement entries', () => {
     expect(output).toContain('AcmeOrg')
     expect(output).toContain('acmeorg')
     expect(output).toContain('com.acmeorg.acmestack')
-    expect(output).toContain('eas-123')
   })
 })

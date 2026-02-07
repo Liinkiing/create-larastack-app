@@ -40,10 +40,6 @@ export function buildReplacementEntries(context: ReplacementContext): Replacemen
       to: `@${context.npmScope}/`,
     },
     {
-      from: '<project_id>',
-      to: context.easProjectId ?? '<project_id>',
-    },
-    {
       from: 'Larastack',
       to: context.projectDisplayName,
     },

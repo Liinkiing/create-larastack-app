@@ -36,5 +36,4 @@ export interface ReplacementContext {
   githubUserLower: string
   repositorySlug: string
   mobileBundleId: string
-  easProjectId?: string
 }

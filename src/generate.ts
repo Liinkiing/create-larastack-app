@@ -242,7 +242,6 @@ function buildReplacementContext(config: GenerationConfig): ReplacementContext {
     githubUserLower: config.githubUserLower,
     repositorySlug: config.projectSlug,
     mobileBundleId: `com.${ownerSegment}.${appSegment}`,
-    easProjectId: config.easProjectId,
   }
 }
 
