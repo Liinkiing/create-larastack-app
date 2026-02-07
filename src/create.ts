@@ -68,18 +68,13 @@ export async function runCreateApp(options: CliRunOptions): Promise<void> {
     (needsMobileConfig
       ? resolvePrompt(
           await text({
-            message: 'Expo EAS project ID?',
+            message: 'Expo EAS project ID? (optional)',
             placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
-            validate: value => {
-              if (!value.trim()) {
-                return 'EAS project ID is required when mobile is included.'
-              }
-
-              return undefined
-            },
           }),
         )
       : undefined)
+
+  const normalizedEasProjectId = easProjectId?.trim() || undefined
 
   const detectedGithubUser = await detectGitHubUsername()
   const detectedAuthor = await detectGitAuthor()
@@ -125,7 +120,7 @@ export async function runCreateApp(options: CliRunOptions): Promise<void> {
     githubUser: githubUser.trim(),
     githubUserLower: githubUser.trim().toLowerCase(),
     author: authorInput.trim(),
-    easProjectId: easProjectId?.trim(),
+    easProjectId: normalizedEasProjectId,
     templateSource: options.templateSource,
     templateRef: options.templateRef,
     initializeGit: options.git,

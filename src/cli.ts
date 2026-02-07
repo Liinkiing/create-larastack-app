@@ -38,7 +38,7 @@ program
   .option('-a, --apps <apps>', 'Comma-separated app list (frontend,backend,mobile)', parseAppsOption)
   .option('--github-user <username>', 'GitHub username used for owner placeholders')
   .option('--author <author>', 'Author for package.json (John Doe <john@email.com>)')
-  .option('--eas-project-id <id>', 'Expo EAS project ID (required if mobile is included)')
+  .option('--eas-project-id <id>', 'Expo EAS project ID (optional)')
   .option('--template-source <source>', 'Template source override', 'github:Liinkiing/larastack')
   .option('--template-ref <ref>', 'Template git ref', 'master')
   .option('--no-git', 'Skip git repository initialization')

@@ -13,7 +13,7 @@ The CLI asks for:
 - included app folders (checkbox multiselect)
 - GitHub username (auto-detected when possible)
 - author (`John Doe <john@email.com>`, auto-filled from git config when possible)
-- Expo EAS project ID (when `mobile` is selected)
+- Expo EAS project ID (optional, when `mobile` is selected)
 
 It then customizes placeholders like `Larastack`, `larastack`, and `liinkiing`, updates mobile identifiers, removes unselected app folders, and can initialize a fresh git repository.
 
@@ -58,7 +58,7 @@ npx create-larastack-app@latest my-app \
 - `--apps <apps>`: Comma-separated list of `frontend,backend,mobile`
 - `--github-user <username>`: GitHub username for owner/repository placeholders
 - `--author <author>`: Author for package.json (`John Doe <john@email.com>`)
-- `--eas-project-id <id>`: Expo EAS project ID (required when `mobile` is included)
+- `--eas-project-id <id>`: Expo EAS project ID (optional)
 - `--template-source <source>`: Override template source (`github:Liinkiing/larastack` by default)
 - `--template-ref <ref>`: Git reference for the template (`master` by default)
 - `--no-git`: Skip `git init`
