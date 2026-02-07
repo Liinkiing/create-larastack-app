@@ -1,5 +1,12 @@
 # Changelog
 
+# [0.4.0](https://github.com/Liinkiing/create-larastack-app/compare/v0.3.0...v0.4.0) (2026-02-07)
+
+### Features
+
+- better eas generation ([09a0440](https://github.com/Liinkiing/create-larastack-app/commit/09a0440d455ff2fa8a9fafb18c845769c97ef742))
+- eas made optional ([6a6045b](https://github.com/Liinkiing/create-larastack-app/commit/6a6045b30106798c4f642055aa2ed4b35918760e))
+
 # [0.3.0](https://github.com/Liinkiing/create-larastack-app/compare/v0.2.0...v0.3.0) (2026-02-07)
 
 # 0.2.0 (2026-02-07)
