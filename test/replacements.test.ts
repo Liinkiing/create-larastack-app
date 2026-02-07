@@ -15,8 +15,7 @@ describe('replacement entries', () => {
       easProjectId: 'eas-123',
     })
 
-    const input =
-      'Larastack :: larastack :: Liinkiing :: liinkiing :: com.liinkiing.larastack :: <project_id>'
+    const input = 'Larastack :: larastack :: Liinkiing :: liinkiing :: com.liinkiing.larastack :: <project_id>'
     const output = applyReplacements(input, entries)
 
     expect(output).toContain('Acme Stack')

@@ -1,13 +1,4 @@
-import {
-  cancel,
-  intro,
-  isCancel,
-  multiselect,
-  note,
-  outro,
-  spinner,
-  text,
-} from '@clack/prompts'
+import { cancel, intro, isCancel, multiselect, note, outro, spinner, text } from '@clack/prompts'
 import { basename, relative, resolve } from 'node:path'
 
 import { detectGitAuthor, detectGitHubUsername } from './detect.js'
@@ -27,7 +18,7 @@ export async function runCreateApp(options: CliRunOptions): Promise<void> {
       await text({
         message: 'Where should the project be created?',
         placeholder: 'my-larastack-app',
-      })
+      }),
     )
 
   const targetDirectory = resolve(process.cwd(), targetInput)
@@ -41,14 +32,14 @@ export async function runCreateApp(options: CliRunOptions): Promise<void> {
       await text({
         message: 'Application name?',
         initialValue: defaultDisplayName,
-        validate: (value) => {
+        validate: value => {
           if (!value.trim()) {
             return 'Application name is required.'
           }
 
           return undefined
         },
-      })
+      }),
     )
 
   const selectedApps =
@@ -63,7 +54,7 @@ export async function runCreateApp(options: CliRunOptions): Promise<void> {
         ],
         initialValues: [...APP_CHOICES],
         required: true,
-      })
+      }),
     )
 
   if (selectedApps.length === 0) {
@@ -79,14 +70,14 @@ export async function runCreateApp(options: CliRunOptions): Promise<void> {
           await text({
             message: 'Expo EAS project ID?',
             placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
-            validate: (value) => {
+            validate: value => {
               if (!value.trim()) {
                 return 'EAS project ID is required when mobile is included.'
               }
 
               return undefined
             },
-          })
+          }),
         )
       : undefined)
 
@@ -99,14 +90,14 @@ export async function runCreateApp(options: CliRunOptions): Promise<void> {
       await text({
         message: 'GitHub username for repository references?',
         initialValue: detectedGithubUser,
-        validate: (value) => {
+        validate: value => {
           if (!value.trim()) {
             return 'GitHub username is required.'
           }
 
           return undefined
         },
-      })
+      }),
     )
 
   const authorInput =
@@ -115,8 +106,8 @@ export async function runCreateApp(options: CliRunOptions): Promise<void> {
       await text({
         message: 'Author name for package.json? (John Doe <john@email.com>)',
         initialValue: detectedAuthor,
-        validate: (value) => validateAuthor(value),
-      })
+        validate: value => validateAuthor(value),
+      }),
     )
 
   const authorValidationError = validateAuthor(authorInput)

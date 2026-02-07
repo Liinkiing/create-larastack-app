@@ -14,11 +14,7 @@ function runAndRead(command: string, args: string[]): string | undefined {
 }
 
 export async function detectGitHubUsername(): Promise<string | undefined> {
-  const envHints = [
-    process.env.GITHUB_USER,
-    process.env.GITHUB_USERNAME,
-    process.env.GH_USER,
-  ]
+  const envHints = [process.env.GITHUB_USER, process.env.GITHUB_USERNAME, process.env.GH_USER]
 
   for (const value of envHints) {
     const candidate = value?.trim()

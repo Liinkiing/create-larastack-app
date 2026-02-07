@@ -1,14 +1,14 @@
+import { downloadTemplate } from 'giget'
 import { spawnSync } from 'node:child_process'
 import { readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-
-import { downloadTemplate } from 'giget'
 import { parse, stringify } from 'yaml'
+
+import type { AppChoice, GenerationConfig, ReplacementContext } from './types.js'
 
 import { isBinaryBuffer, walkFiles } from './files.js'
 import { toIdentifierSegment } from './naming.js'
 import { applyReplacements, buildReplacementEntries } from './replacements.js'
-import type { AppChoice, GenerationConfig, ReplacementContext } from './types.js'
 
 interface GenerationResult {
   warnings: string[]
@@ -83,7 +83,7 @@ async function updateWorkspacePackages(targetDirectory: string, selectedApps: Ap
 
 async function replaceTemplateTokens(
   targetDirectory: string,
-  replacements: ReturnType<typeof buildReplacementEntries>
+  replacements: ReturnType<typeof buildReplacementEntries>,
 ): Promise<void> {
   const files = await walkFiles(targetDirectory)
 
@@ -109,10 +109,7 @@ async function replaceTemplateTokens(
   }
 }
 
-async function applyStructuredUpdates(
-  config: GenerationConfig,
-  replacementContext: ReplacementContext
-): Promise<void> {
+async function applyStructuredUpdates(config: GenerationConfig, replacementContext: ReplacementContext): Promise<void> {
   await updateRootPackageJson(config.targetDirectory, replacementContext, config.author)
   await updateWorkspacePackagesJson(config.targetDirectory, replacementContext, config.selectedApps)
 
@@ -128,11 +125,11 @@ async function applyStructuredUpdates(
 async function updateRootPackageJson(
   targetDirectory: string,
   replacementContext: ReplacementContext,
-  author: string
+  author: string,
 ): Promise<void> {
   const packagePath = join(targetDirectory, 'package.json')
 
-  await updateJsonFile(packagePath, (data) => {
+  await updateJsonFile(packagePath, data => {
     data.name = `@${replacementContext.npmScope}/workspace`
     data.author = author
     data.repository = `git@github.com:${replacementContext.githubUser}/${replacementContext.repositorySlug}.git`
@@ -142,7 +139,7 @@ async function updateRootPackageJson(
 async function updateWorkspacePackagesJson(
   targetDirectory: string,
   replacementContext: ReplacementContext,
-  selectedApps: AppChoice[]
+  selectedApps: AppChoice[],
 ): Promise<void> {
   const nameMap: Record<AppChoice, string> = {
     frontend: `@${replacementContext.npmScope}/frontend`,
@@ -153,7 +150,7 @@ async function updateWorkspacePackagesJson(
   for (const app of selectedApps) {
     const packagePath = join(targetDirectory, app, 'package.json')
 
-    await updateJsonFile(packagePath, (data) => {
+    await updateJsonFile(packagePath, data => {
       data.name = nameMap[app]
     })
   }
@@ -162,11 +159,11 @@ async function updateWorkspacePackagesJson(
 async function updateMobileAppJson(
   targetDirectory: string,
   config: GenerationConfig,
-  replacementContext: ReplacementContext
+  replacementContext: ReplacementContext,
 ): Promise<void> {
   const appJsonPath = join(targetDirectory, 'mobile', 'app.json')
 
-  await updateJsonFile(appJsonPath, (data) => {
+  await updateJsonFile(appJsonPath, data => {
     const expo = (data.expo ??= {})
 
     expo.name = config.projectDisplayName
@@ -191,10 +188,7 @@ async function updateMobileAppJson(
   })
 }
 
-async function updateBackendEnvExample(
-  targetDirectory: string,
-  projectDisplayName: string
-): Promise<void> {
+async function updateBackendEnvExample(targetDirectory: string, projectDisplayName: string): Promise<void> {
   const envPath = join(targetDirectory, 'backend', '.env.example')
 
   let content: string
@@ -222,10 +216,7 @@ function formatEnvValue(value: string): string {
   return `"${escaped}"`
 }
 
-async function updateJsonFile(
-  filePath: string,
-  updater: (data: Record<string, any>) => void
-): Promise<void> {
+async function updateJsonFile(filePath: string, updater: (data: Record<string, any>) => void): Promise<void> {
   let parsed: Record<string, any>
 
   try {

@@ -68,6 +68,8 @@ npx create-larastack-app@latest my-app \
 ```bash
 pnpm install
 pnpm run lint
+pnpm run typecheck
+pnpm run format:check
 pnpm run test
 pnpm run build
 ```

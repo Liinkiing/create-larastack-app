@@ -25,15 +25,16 @@ export function toDisplayName(input: string): string {
   return cleaned
     .split(' ')
     .filter(Boolean)
-    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .map(word => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
     .join(' ')
 }
 
 export function toIdentifierSegment(input: string, fallback: string): string {
-  const fallbackSegment = fallback
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '')
-    .replace(/^[^a-z]+/g, '') || 'app'
+  const fallbackSegment =
+    fallback
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .replace(/^[^a-z]+/g, '') || 'app'
 
   const cleaned = input.toLowerCase().replace(/[^a-z0-9]/g, '')
   const withFallback = cleaned || fallbackSegment

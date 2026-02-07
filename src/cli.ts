@@ -8,7 +8,7 @@ import { APP_CHOICES, type AppChoice } from './types.js'
 function parseAppsOption(value: string): AppChoice[] {
   const parsed = value
     .split(',')
-    .map((item) => item.trim())
+    .map(item => item.trim())
     .filter(Boolean)
 
   if (parsed.length === 0) {
@@ -19,9 +19,7 @@ function parseAppsOption(value: string): AppChoice[] {
 
   for (const item of parsed) {
     if (!APP_CHOICES.includes(item as AppChoice)) {
-      throw new InvalidArgumentError(
-        `Invalid app "${item}". Allowed values: ${APP_CHOICES.join(', ')}.`
-      )
+      throw new InvalidArgumentError(`Invalid app "${item}". Allowed values: ${APP_CHOICES.join(', ')}.`)
     }
 
     unique.add(item as AppChoice)
@@ -37,11 +35,7 @@ program
   .description('Scaffold a Larastack-based monorepo with selectable applications.')
   .argument('[directory]', 'Directory to create the project in')
   .option('-n, --name <name>', 'Application display name')
-  .option(
-    '-a, --apps <apps>',
-    'Comma-separated app list (frontend,backend,mobile)',
-    parseAppsOption
-  )
+  .option('-a, --apps <apps>', 'Comma-separated app list (frontend,backend,mobile)', parseAppsOption)
   .option('--github-user <username>', 'GitHub username used for owner placeholders')
   .option('--author <author>', 'Author for package.json (John Doe <john@email.com>)')
   .option('--eas-project-id <id>', 'Expo EAS project ID (required if mobile is included)')

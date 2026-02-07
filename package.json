@@ -2,17 +2,30 @@
   "name": "create-larastack-app",
   "version": "0.1.0",
   "description": "Scaffold a Larastack-based monorepo with selectable frontend, backend, and mobile apps.",
-  "type": "module",
+  "keywords": [
+    "cli",
+    "create",
+    "larastack",
+    "scaffold",
+    "starter"
+  ],
+  "homepage": "https://github.com/Liinkiing/create-larastack-app#readme",
+  "bugs": {
+    "url": "https://github.com/Liinkiing/create-larastack-app/issues"
+  },
   "license": "MIT",
   "author": "Liinkiing",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Liinkiing/create-larastack-app.git"
   },
-  "homepage": "https://github.com/Liinkiing/create-larastack-app#readme",
-  "bugs": {
-    "url": "https://github.com/Liinkiing/create-larastack-app/issues"
+  "bin": {
+    "create-larastack-app": "./dist/cli.js"
   },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -21,22 +34,18 @@
       "default": "./dist/index.js"
     }
   },
-  "bin": {
-    "create-larastack-app": "./dist/cli.js"
+  "publishConfig": {
+    "access": "public"
   },
-  "files": [
-    "dist"
-  ],
-  "engines": {
-    "node": ">=22"
-  },
-  "packageManager": "pnpm@10.8.0",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "clean": "rm -rf dist",
     "dev": "tsx src/cli.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "pnpm run typecheck",
+    "lint": "oxlint --report-unused-disable-directives-severity error",
+    "lint:fix": "oxlint --fix --report-unused-disable-directives-severity error",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepack": "pnpm run clean && pnpm run build"
@@ -49,18 +58,14 @@
   },
   "devDependencies": {
     "@types/node": "^22.17.0",
+    "oxfmt": "^0.27.0",
+    "oxlint": "^1.42.0",
     "tsx": "^4.20.4",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   },
-  "publishConfig": {
-    "access": "public"
+  "engines": {
+    "node": ">=22"
   },
-  "keywords": [
-    "create",
-    "larastack",
-    "cli",
-    "scaffold",
-    "starter"
-  ]
+  "packageManager": "pnpm@10.8.0"
 }
