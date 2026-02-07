@@ -80,12 +80,35 @@ Run locally:
 node dist/cli.js
 ```
 
-## Publish
+## Release
+
+Releases are manual and run from GitHub Actions with `release-it` + Conventional Commits.
+
+1. Open Actions and run the `release` workflow.
+2. Choose inputs:
+   - `bump`: `auto` (recommended), or force `patch`, `minor`, `major`
+   - `prerelease`: `none`, `alpha`, `beta`, `rc`
+   - `dry-run`: `true` to preview, `false` to publish
+3. Run it on `master`.
+
+The workflow lints, typechecks, format-checks, tests, builds, updates `CHANGELOG.md`, creates the release commit/tag, publishes to npm, and creates a GitHub release.
+
+Local equivalents:
 
 ```bash
-pnpm run build
-npm publish --access public
+pnpm run release:dry
+pnpm run release
 ```
+
+Conventional Commit bump rules:
+
+- `fix:` -> patch
+- `feat:` -> minor
+- `BREAKING CHANGE:` (or `!`) -> major
+
+If commits are only non-releasable types (`chore:`, `docs:`, `test:`...), use the workflow `bump` input to force a release.
+
+For npm auth, prefer npm Trusted Publishing (OIDC) for `.github/workflows/release.yml`. As a fallback, set `NPM_TOKEN` in repository secrets.
 
 Because the package name is `create-larastack-app`, users can run the short create commands:
 
