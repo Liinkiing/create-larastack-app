@@ -4,7 +4,7 @@ import { basename, relative, resolve } from 'node:path'
 import { detectGitAuthor, detectGitHubUsername } from './detect.js'
 import { ensureEmptyDirectory } from './files.js'
 import { generateProject } from './generate.js'
-import { toDisplayName, toSlug } from './naming.js'
+import { toDisplayName, toIdentifierSegment, toSlug } from './naming.js'
 import { APP_CHOICES, type AppChoice, type CliRunOptions, type GenerationConfig } from './types.js'
 
 const AUTHOR_FORMAT = /^([^<>]+)\s<([^<>\s@]+@[^<>\s@]+\.[^<>\s@]+)>$/
@@ -62,7 +62,16 @@ export async function runCreateApp(options: CliRunOptions): Promise<void> {
     throw new Error('Select at least one application (frontend, backend, or mobile).')
   }
 
+  const projectSlug = toSlug(projectDisplayName)
+  const detectedGithubUser = await detectGitHubUsername()
+
   const needsMobileConfig = selectedApps.includes('mobile')
+  const appIdentifierOwnerSegment = toIdentifierSegment(
+    (options.githubUser ?? detectedGithubUser ?? '').trim().toLowerCase(),
+    'yourcompany',
+  )
+  const appIdentifierAppSegment = toIdentifierSegment(projectSlug, 'name')
+  const defaultAppIdentifier = `com.${appIdentifierOwnerSegment}.${appIdentifierAppSegment}`
 
   const appIdentifier =
     options.appIdentifier ??
@@ -71,6 +80,7 @@ export async function runCreateApp(options: CliRunOptions): Promise<void> {
           await text({
             message: 'Mobile app identifier?',
             placeholder: 'com.yourcompany.name',
+            initialValue: defaultAppIdentifier,
             validate: value => validateAppIdentifier(value),
           }),
         )
@@ -95,7 +105,6 @@ export async function runCreateApp(options: CliRunOptions): Promise<void> {
 
   const normalizedEasProjectId = easProjectId?.trim() || undefined
 
-  const detectedGithubUser = await detectGitHubUsername()
   const detectedAuthor = await detectGitAuthor()
 
   const githubUser =
@@ -128,8 +137,6 @@ export async function runCreateApp(options: CliRunOptions): Promise<void> {
   if (authorValidationError) {
     throw new Error(authorValidationError)
   }
-
-  const projectSlug = toSlug(projectDisplayName)
 
   const config: GenerationConfig = {
     targetDirectory,
