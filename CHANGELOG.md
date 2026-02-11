@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.1](https://github.com/Liinkiing/create-larastack-app/compare/v0.6.0...v0.6.1) (2026-02-11)
+
+### Bug Fixes
+
+- prefill mobile app identifier from defaults ([ab6db85](https://github.com/Liinkiing/create-larastack-app/commit/ab6db85b10571a0d7ca0bb22ef6ebaa105887b63))
+
 # [0.6.0](https://github.com/Liinkiing/create-larastack-app/compare/v0.5.0...v0.6.0) (2026-02-11)
 
 ### Features
