@@ -8,6 +8,7 @@ import { toDisplayName, toSlug } from './naming.js'
 import { APP_CHOICES, type AppChoice, type CliRunOptions, type GenerationConfig } from './types.js'
 
 const AUTHOR_FORMAT = /^([^<>]+)\s<([^<>\s@]+@[^<>\s@]+\.[^<>\s@]+)>$/
+const APP_IDENTIFIER_FORMAT = /^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$/
 
 export async function runCreateApp(options: CliRunOptions): Promise<void> {
   intro('create-larastack-app')
@@ -63,6 +64,24 @@ export async function runCreateApp(options: CliRunOptions): Promise<void> {
 
   const needsMobileConfig = selectedApps.includes('mobile')
 
+  const appIdentifier =
+    options.appIdentifier ??
+    (needsMobileConfig
+      ? resolvePrompt(
+          await text({
+            message: 'Mobile app identifier?',
+            placeholder: 'com.yourcompany.name',
+            validate: value => validateAppIdentifier(value),
+          }),
+        )
+      : undefined)
+
+  const normalizedAppIdentifier = appIdentifier?.trim() || undefined
+
+  if (needsMobileConfig && !normalizedAppIdentifier) {
+    throw new Error('Mobile app identifier is required when mobile is selected.')
+  }
+
   const easProjectId =
     options.easProjectId ??
     (needsMobileConfig
@@ -117,6 +136,7 @@ export async function runCreateApp(options: CliRunOptions): Promise<void> {
     projectDisplayName: projectDisplayName.trim(),
     projectSlug,
     selectedApps,
+    mobileAppIdentifier: normalizedAppIdentifier,
     githubUser: githubUser.trim(),
     githubUserLower: githubUser.trim().toLowerCase(),
     author: authorInput.trim(),
@@ -164,6 +184,20 @@ function validateAuthor(value: string): string | undefined {
 
   if (!AUTHOR_FORMAT.test(value.trim())) {
     return 'Use format: John Doe <john@email.com>'
+  }
+
+  return undefined
+}
+
+function validateAppIdentifier(value: string): string | undefined {
+  const trimmed = value.trim()
+
+  if (!trimmed) {
+    return 'Mobile app identifier is required.'
+  }
+
+  if (!APP_IDENTIFIER_FORMAT.test(trimmed)) {
+    return 'Use format like com.yourcompany.name'
   }
 
   return undefined

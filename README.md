@@ -11,6 +11,7 @@ The CLI asks for:
 - project folder
 - application name
 - included app folders (checkbox multiselect)
+- mobile app identifier (required, when `mobile` is selected)
 - GitHub username (auto-detected when possible)
 - author (`John Doe <john@email.com>`, auto-filled from git config when possible)
 - Expo EAS project ID (optional, when `mobile` is selected)
@@ -56,6 +57,7 @@ npx create-larastack-app@latest my-app \
 
 - `--name <name>`: Application display name
 - `--apps <apps>`: Comma-separated list of `frontend,backend,mobile`
+- `--app-identifier <id>`: Mobile app identifier (required when `mobile` is selected)
 - `--github-user <username>`: GitHub username for owner/repository placeholders
 - `--author <author>`: Author for package.json (`John Doe <john@email.com>`)
 - `--eas-project-id <id>`: Expo EAS project ID (optional)

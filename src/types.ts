@@ -6,6 +6,7 @@ export interface CliRunOptions {
   directory?: string
   name?: string
   apps?: AppChoice[]
+  appIdentifier?: string
   githubUser?: string
   author?: string
   easProjectId?: string
@@ -19,6 +20,7 @@ export interface GenerationConfig {
   projectDisplayName: string
   projectSlug: string
   selectedApps: AppChoice[]
+  mobileAppIdentifier?: string
   githubUser: string
   githubUserLower: string
   author: string

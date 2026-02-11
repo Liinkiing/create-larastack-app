@@ -36,6 +36,7 @@ program
   .argument('[directory]', 'Directory to create the project in')
   .option('-n, --name <name>', 'Application display name')
   .option('-a, --apps <apps>', 'Comma-separated app list (frontend,backend,mobile)', parseAppsOption)
+  .option('--app-identifier <id>', 'Mobile app identifier (required when mobile is selected)')
   .option('--github-user <username>', 'GitHub username used for owner placeholders')
   .option('--author <author>', 'Author for package.json (John Doe <john@email.com>)')
   .option('--eas-project-id <id>', 'Expo EAS project ID (optional)')
@@ -48,6 +49,7 @@ program
       directory,
       name: options.name,
       apps: options.apps,
+      appIdentifier: options.appIdentifier,
       githubUser: options.githubUser,
       author: options.author,
       easProjectId: options.easProjectId,

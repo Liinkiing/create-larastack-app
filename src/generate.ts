@@ -16,6 +16,10 @@ interface GenerationResult {
 }
 
 export async function generateProject(config: GenerationConfig): Promise<GenerationResult> {
+  if (config.selectedApps.includes('mobile') && !config.mobileAppIdentifier) {
+    throw new Error('Mobile app identifier is required when mobile app is selected.')
+  }
+
   const templateSource = config.templateSource.includes('#')
     ? config.templateSource
     : `${config.templateSource}#${config.templateRef}`
@@ -265,7 +269,7 @@ function buildReplacementContext(config: GenerationConfig): ReplacementContext {
     githubUser: config.githubUser,
     githubUserLower: config.githubUserLower,
     repositorySlug: config.projectSlug,
-    mobileBundleId: `com.${ownerSegment}.${appSegment}`,
+    mobileBundleId: config.mobileAppIdentifier ?? `com.${ownerSegment}.${appSegment}`,
   }
 }
 
