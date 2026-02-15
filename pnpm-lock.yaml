@@ -17,6 +17,12 @@ importers:
       giget:
         specifier: ^2.0.0
         version: 2.0.0
+      magic-string:
+        specifier: ^0.30.21
+        version: 0.30.21
+      php-parser:
+        specifier: ^3.2.5
+        version: 3.2.5
       yaml:
         specifier: ^2.8.1
         version: 2.8.2
@@ -1543,6 +1549,9 @@ packages:
 
   perfect-debounce@2.1.0:
     resolution: {integrity: sha512-LjgdTytVFXeUgtHZr9WYViYSM/g8MkcTPYDlPa3cDqMirHjKiSZPYd6DoL7pK8AJQr+uWkQvCjHNdiMqsrJs+g==}
+
+  php-parser@3.2.5:
+    resolution: {integrity: sha512-M1ZYlALFFnESbSdmRtTQrBFUHSriHgPhgqtTF/LCbZM4h7swR5PHtUceB2Kzby5CfqcsYwBn7OXTJ0+8Sajwkw==}
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -3339,6 +3348,8 @@ snapshots:
   pathval@2.0.1: {}
 
   perfect-debounce@2.1.0: {}
+
+  php-parser@3.2.5: {}
 
   picocolors@1.1.1: {}
 

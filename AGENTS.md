@@ -15,7 +15,9 @@ Guidance for coding agents working in `create-larastack-app`.
 - `src/cli.ts`: CLI options and argument parsing.
 - `src/create.ts`: interactive/non-interactive prompt orchestration.
 - `src/generate.ts`: template download, token replacement, structured updates.
-- `src/conditional-rules.ts`: conditional remove/copy rules engine.
+- `src/conditional-rules.ts`: conditional remove/copy/transform rules engine.
+- `src/transformers/`: strict named file transforms (PHP/YAML/JSON/.env) with barrel export.
+- `src/transformers/ids.ts`: canonical list of available transform ids.
 - `src/replacements.ts`: placeholder mapping and replacement helpers.
 - `src/types.ts`: shared app and config types.
 - `test/generate.test.ts`: workflow pruning and conditional rule tests.

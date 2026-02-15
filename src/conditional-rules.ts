@@ -1,6 +1,9 @@
 import { access, cp, glob, readFile, rm } from 'node:fs/promises'
 import { isAbsolute, join, relative, resolve } from 'node:path'
 
+import { assertNever } from './assert-never.js'
+import { AVAILABLE_TRANSFORMERS, isTransformerId, type TransformerId } from './transformers/ids.js'
+import { executeNamedTransform } from './transformers/index.js'
 import { APP_CHOICES, type AppChoice } from './types.js'
 
 export const CONDITIONAL_RULES_MANIFEST_PATH = '.create-larastack/rules.json'
@@ -36,6 +39,12 @@ type RuleOperation =
       type: 'copy'
       from: string
       to: string
+    }
+  | {
+      type: 'transform'
+      path: string
+      transform: TransformerId
+      options?: Record<string, unknown>
     }
 
 interface ConditionalRule {
@@ -274,57 +283,99 @@ function validateOperation(value: unknown, ruleIndex: number, operationIndex: nu
     )
   }
 
-  if (value.type === 'remove') {
-    if (
-      !Array.isArray(value.paths) ||
-      value.paths.length === 0 ||
-      value.paths.some(pathValue => typeof pathValue !== 'string')
-    ) {
-      throw new Error(
-        `Invalid ${CONDITIONAL_RULES_MANIFEST_PATH}: rules[${ruleIndex}].operations[${operationIndex}].paths must be a non-empty string array.`,
-      )
+  const operationType = value.type
+
+  switch (operationType) {
+    case 'remove': {
+      if (
+        !Array.isArray(value.paths) ||
+        value.paths.length === 0 ||
+        value.paths.some(pathValue => typeof pathValue !== 'string')
+      ) {
+        throw new Error(
+          `Invalid ${CONDITIONAL_RULES_MANIFEST_PATH}: rules[${ruleIndex}].operations[${operationIndex}].paths must be a non-empty string array.`,
+        )
+      }
+
+      const normalizedPaths = value.paths.map(pathValue => pathValue.trim())
+
+      if (normalizedPaths.some(pathValue => pathValue.length === 0 || pathValue === '.')) {
+        throw new Error(
+          `Invalid ${CONDITIONAL_RULES_MANIFEST_PATH}: rules[${ruleIndex}].operations[${operationIndex}].paths cannot contain empty values or ".".`,
+        )
+      }
+
+      return {
+        type: 'remove',
+        paths: normalizedPaths,
+      }
     }
 
-    const normalizedPaths = value.paths.map(pathValue => pathValue.trim())
+    case 'copy': {
+      if (typeof value.from !== 'string' || typeof value.to !== 'string') {
+        throw new Error(
+          `Invalid ${CONDITIONAL_RULES_MANIFEST_PATH}: rules[${ruleIndex}].operations[${operationIndex}] copy operation requires from and to strings.`,
+        )
+      }
 
-    if (normalizedPaths.some(pathValue => pathValue.length === 0 || pathValue === '.')) {
-      throw new Error(
-        `Invalid ${CONDITIONAL_RULES_MANIFEST_PATH}: rules[${ruleIndex}].operations[${operationIndex}].paths cannot contain empty values or ".".`,
-      )
+      const from = value.from.trim()
+      const to = value.to.trim()
+
+      if (!from || !to || from === '.' || to === '.') {
+        throw new Error(
+          `Invalid ${CONDITIONAL_RULES_MANIFEST_PATH}: rules[${ruleIndex}].operations[${operationIndex}] copy operation from/to cannot be empty or ".".`,
+        )
+      }
+
+      return {
+        type: 'copy',
+        from,
+        to,
+      }
     }
 
-    return {
-      type: 'remove',
-      paths: normalizedPaths,
+    case 'transform': {
+      if (typeof value.path !== 'string' || typeof value.transform !== 'string') {
+        throw new Error(
+          `Invalid ${CONDITIONAL_RULES_MANIFEST_PATH}: rules[${ruleIndex}].operations[${operationIndex}] transform operation requires path and transform strings.`,
+        )
+      }
+
+      const path = value.path.trim()
+      const transform = value.transform.trim()
+
+      if (!path || path === '.' || !transform) {
+        throw new Error(
+          `Invalid ${CONDITIONAL_RULES_MANIFEST_PATH}: rules[${ruleIndex}].operations[${operationIndex}] transform operation path/transform cannot be empty.`,
+        )
+      }
+
+      if (!isTransformerId(transform)) {
+        throw new Error(
+          `Invalid ${CONDITIONAL_RULES_MANIFEST_PATH}: rules[${ruleIndex}].operations[${operationIndex}] transform must be one of ${AVAILABLE_TRANSFORMERS.join(', ')}.`,
+        )
+      }
+
+      if (value.options !== undefined && !isRecord(value.options)) {
+        throw new Error(
+          `Invalid ${CONDITIONAL_RULES_MANIFEST_PATH}: rules[${ruleIndex}].operations[${operationIndex}].options must be an object when provided.`,
+        )
+      }
+
+      return {
+        type: 'transform',
+        path,
+        transform,
+        options: value.options,
+      }
+    }
+
+    default: {
+      throw new Error(
+        `Invalid ${CONDITIONAL_RULES_MANIFEST_PATH}: rules[${ruleIndex}].operations[${operationIndex}].type must be "remove", "copy", or "transform".`,
+      )
     }
   }
-
-  if (value.type === 'copy') {
-    if (typeof value.from !== 'string' || typeof value.to !== 'string') {
-      throw new Error(
-        `Invalid ${CONDITIONAL_RULES_MANIFEST_PATH}: rules[${ruleIndex}].operations[${operationIndex}] copy operation requires from and to strings.`,
-      )
-    }
-
-    const from = value.from.trim()
-    const to = value.to.trim()
-
-    if (!from || !to || from === '.' || to === '.') {
-      throw new Error(
-        `Invalid ${CONDITIONAL_RULES_MANIFEST_PATH}: rules[${ruleIndex}].operations[${operationIndex}] copy operation from/to cannot be empty or ".".`,
-      )
-    }
-
-    return {
-      type: 'copy',
-      from,
-      to,
-    }
-  }
-
-  throw new Error(
-    `Invalid ${CONDITIONAL_RULES_MANIFEST_PATH}: rules[${ruleIndex}].operations[${operationIndex}].type must be "remove" or "copy".`,
-  )
 }
 
 async function runConditionalRules(
@@ -340,7 +391,7 @@ async function runConditionalRules(
     }
 
     for (const operation of rule.operations) {
-      await executeRuleOperation(operation, targetDirectory, rule.id)
+      await executeRuleOperation(operation, targetDirectory, selectedApps, rule.id)
     }
   }
 }
@@ -377,16 +428,47 @@ function matchesClause(clause: ConditionClause, selectedApps: Set<AppChoice>): b
   return !selectedApps.has(clause.appNotSelected)
 }
 
-async function executeRuleOperation(operation: RuleOperation, targetDirectory: string, ruleId: string): Promise<void> {
-  if (operation.type === 'remove') {
-    for (const pathPattern of operation.paths) {
-      await removePathPattern(targetDirectory, pathPattern, ruleId)
+async function executeRuleOperation(
+  operation: RuleOperation,
+  targetDirectory: string,
+  selectedApps: AppChoice[],
+  ruleId: string,
+): Promise<void> {
+  switch (operation.type) {
+    case 'remove': {
+      for (const pathPattern of operation.paths) {
+        await removePathPattern(targetDirectory, pathPattern, ruleId)
+      }
+
+      break
     }
 
-    return
-  }
+    case 'copy': {
+      await copyPath(targetDirectory, operation.from, operation.to, ruleId)
+      break
+    }
 
-  await copyPath(targetDirectory, operation.from, operation.to, ruleId)
+    case 'transform': {
+      const absolutePath = resolvePathWithinTarget(targetDirectory, operation.path, ruleId)
+      const safePath = relative(targetDirectory, absolutePath)
+
+      await executeNamedTransform({
+        targetDirectory,
+        selectedApps,
+        ruleId,
+        operation: {
+          ...operation,
+          path: safePath,
+        },
+      })
+
+      break
+    }
+
+    default: {
+      assertNever(operation, 'executeRuleOperation')
+    }
+  }
 }
 
 async function removePathPattern(targetDirectory: string, pathPattern: string, ruleId: string): Promise<void> {

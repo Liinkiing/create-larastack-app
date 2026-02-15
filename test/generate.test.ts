@@ -1,4 +1,4 @@
-import { access, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { access, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -129,6 +129,174 @@ describe('applyConditionalFileRules', () => {
       await applyConditionalFileRules(tempDirectory, ['backend', 'mobile'])
 
       await expect(fileExists(migrationPath)).resolves.toBe(true)
+    } finally {
+      await rm(tempDirectory, { recursive: true, force: true })
+    }
+  })
+
+  it('applies transform operations for PHP user profile updates', async () => {
+    const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
+
+    try {
+      await mkdir(join(tempDirectory, '.create-larastack'), { recursive: true })
+      await mkdir(join(tempDirectory, 'backend', 'app', 'Models'), { recursive: true })
+
+      const userModelPath = join(tempDirectory, 'backend', 'app', 'Models', 'User.php')
+
+      await writeFile(
+        userModelPath,
+        `<?php
+
+namespace App\\Models;
+
+use Illuminate\\Database\\Eloquent\\Factories\\HasFactory;
+use Illuminate\\Notifications\\Notifiable;
+use Laravel\\Sanctum\\HasApiTokens;
+
+class User
+{
+    use HasApiTokens, HasFactory, Notifiable;
+}
+`,
+        'utf8',
+      )
+
+      await writeFile(
+        join(tempDirectory, '.create-larastack', 'rules.json'),
+        JSON.stringify(
+          {
+            version: 1,
+            rules: [
+              {
+                id: 'transform-user-model',
+                when: {
+                  allOf: [{ appSelected: 'backend' }, { appNotSelected: 'mobile' }],
+                },
+                operations: [
+                  {
+                    type: 'transform',
+                    path: 'backend/app/Models/User.php',
+                    transform: 'php.user.applyProfile',
+                    options: {
+                      profile: 'no-mobile',
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+          null,
+          2,
+        ),
+        'utf8',
+      )
+
+      await applyConditionalFileRules(tempDirectory, ['backend'])
+
+      const output = await readFile(userModelPath, 'utf8')
+
+      expect(output).not.toContain('Laravel\\Sanctum\\HasApiTokens')
+      expect(output).not.toContain('use HasApiTokens,')
+      expect(output).toContain('use HasFactory, Notifiable;')
+    } finally {
+      await rm(tempDirectory, { recursive: true, force: true })
+    }
+  })
+
+  it('applies graphql transform based on selected apps', async () => {
+    const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
+
+    try {
+      await mkdir(join(tempDirectory, '.create-larastack'), { recursive: true })
+
+      const graphqlConfigPath = join(tempDirectory, 'graphql.config.yml')
+
+      await writeFile(
+        graphqlConfigPath,
+        `projects:
+  frontend:
+    schema:
+      - './frontend/client.schema.graphql'
+      - './frontend/schema.graphql'
+    documents: './frontend/**/*.graphql'
+  backend:
+    include:
+      - './backend/schema-directives.graphql'
+      - './backend/programmatic-types.graphql'
+      - './backend/graphql/**/*.graphql'
+    schema: './backend/graphql/schema.graphql'
+`,
+        'utf8',
+      )
+
+      await writeFile(
+        join(tempDirectory, '.create-larastack', 'rules.json'),
+        JSON.stringify(
+          {
+            version: 1,
+            rules: [
+              {
+                id: 'sync-graphql-config',
+                operations: [
+                  {
+                    type: 'transform',
+                    path: 'graphql.config.yml',
+                    transform: 'yaml.graphql.syncProjects',
+                  },
+                ],
+              },
+            ],
+          },
+          null,
+          2,
+        ),
+        'utf8',
+      )
+
+      await applyConditionalFileRules(tempDirectory, ['mobile'])
+
+      const output = await readFile(graphqlConfigPath, 'utf8')
+
+      expect(output).toContain('mobile:')
+      expect(output).not.toContain('frontend:')
+      expect(output).not.toContain('backend:')
+    } finally {
+      await rm(tempDirectory, { recursive: true, force: true })
+    }
+  })
+
+  it('fails in strict mode for unknown transform ids', async () => {
+    const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
+
+    try {
+      await mkdir(join(tempDirectory, '.create-larastack'), { recursive: true })
+      await writeFile(join(tempDirectory, 'example.txt'), 'hello', 'utf8')
+
+      await writeFile(
+        join(tempDirectory, '.create-larastack', 'rules.json'),
+        JSON.stringify(
+          {
+            version: 1,
+            rules: [
+              {
+                id: 'strict-unknown-transform',
+                operations: [
+                  {
+                    type: 'transform',
+                    path: 'example.txt',
+                    transform: 'unknown.transform',
+                  },
+                ],
+              },
+            ],
+          },
+          null,
+          2,
+        ),
+        'utf8',
+      )
+
+      await expect(applyConditionalFileRules(tempDirectory, ['frontend'])).rejects.toThrow('transform must be one of')
     } finally {
       await rm(tempDirectory, { recursive: true, force: true })
     }

@@ -109,6 +109,115 @@
         }
       }
     },
+    "transformId": {
+      "type": "string",
+      "enum": [
+        "php.user.applyProfile",
+        "php.routes.api.applyProfile",
+        "php.routes.web.applyProfile",
+        "php.migration.users.applyProfile",
+        "php.config.services.applyProfile",
+        "env.backend.applyProfile",
+        "yaml.graphql.syncProjects",
+        "json.opencode.syncMcp"
+      ],
+      "description": "Named transform implemented by create-larastack-app."
+    },
+    "transformOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "path", "transform"],
+      "properties": {
+        "type": {
+          "const": "transform"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!\\.?$).+"
+        },
+        "transform": {
+          "$ref": "#/$defs/transformId"
+        },
+        "options": {
+          "type": "object"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "transform": {
+                "enum": [
+                  "php.user.applyProfile",
+                  "php.routes.api.applyProfile",
+                  "php.migration.users.applyProfile",
+                  "php.config.services.applyProfile",
+                  "env.backend.applyProfile"
+                ]
+              }
+            },
+            "required": ["transform"]
+          },
+          "then": {
+            "required": ["options"],
+            "properties": {
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["profile"],
+                "properties": {
+                  "profile": {
+                    "type": "string",
+                    "enum": ["no-mobile", "backend-only"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "transform": {
+                "const": "php.routes.web.applyProfile"
+              }
+            },
+            "required": ["transform"]
+          },
+          "then": {
+            "required": ["options"],
+            "properties": {
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["profile"],
+                "properties": {
+                  "profile": {
+                    "const": "no-frontend"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "transform": {
+                "enum": ["yaml.graphql.syncProjects", "json.opencode.syncMcp"]
+              }
+            },
+            "required": ["transform"]
+          },
+          "then": {
+            "properties": {
+              "options": false
+            }
+          }
+        }
+      ]
+    },
     "operation": {
       "oneOf": [
         {
@@ -116,6 +225,9 @@
         },
         {
           "$ref": "#/$defs/copyOperation"
+        },
+        {
+          "$ref": "#/$defs/transformOperation"
         }
       ]
     },

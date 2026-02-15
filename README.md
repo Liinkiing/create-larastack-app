@@ -55,6 +55,41 @@ Supported operations:
 
 - `remove`: remove files or directories by relative path or glob
 - `copy`: copy file/directory from one relative path to another
+- `transform`: apply strict named codemods to a file path
+
+Example transform operation:
+
+```json
+{
+  "type": "transform",
+  "path": "backend/app/Models/User.php",
+  "transform": "php.user.applyProfile",
+  "options": {
+    "profile": "no-mobile"
+  }
+}
+```
+
+Transform ids are predefined by the CLI implementation and validated by schema. Current ids:
+
+- `php.user.applyProfile`
+- `php.routes.api.applyProfile`
+- `php.routes.web.applyProfile`
+- `php.migration.users.applyProfile`
+- `php.config.services.applyProfile`
+- `env.backend.applyProfile`
+- `yaml.graphql.syncProjects`
+- `json.opencode.syncMcp`
+
+Canonical source for transform ids in code:
+
+- `src/transformers/ids.ts`
+
+Transform option validation is also schema-enforced:
+
+- `php.user.applyProfile`, `php.routes.api.applyProfile`, `php.migration.users.applyProfile`, `php.config.services.applyProfile`, `env.backend.applyProfile` require `options.profile` in `no-mobile | backend-only`
+- `php.routes.web.applyProfile` requires `options.profile = no-frontend`
+- `yaml.graphql.syncProjects` and `json.opencode.syncMcp` do not accept `options`
 
 Supported conditions:
 
@@ -140,12 +175,11 @@ Releases are manual and run from GitHub Actions with `release-it` + Conventional
 
 The workflow lints, typechecks, format-checks, tests, builds, updates `CHANGELOG.md`, creates the release commit/tag, publishes to npm, and creates a GitHub release.
 
-Local equivalents:
+Important:
 
-```bash
-pnpm run release:dry
-pnpm run release
-```
+- Do **not** use local CLI release commands for real releases.
+- Always trigger `.github/workflows/release.yml` so npm publish uses GitHub OIDC trusted publishing.
+- Local `pnpm run release:dry` is only for debugging.
 
 Conventional Commit bump rules:
 

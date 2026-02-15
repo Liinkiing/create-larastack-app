@@ -60,6 +60,8 @@
     "@clack/prompts": "^0.11.0",
     "commander": "^14.0.1",
     "giget": "^2.0.0",
+    "magic-string": "^0.30.21",
+    "php-parser": "^3.2.5",
     "yaml": "^2.8.1"
   },
   "devDependencies": {
