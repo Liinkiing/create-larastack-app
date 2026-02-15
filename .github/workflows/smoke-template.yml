@@ -15,8 +15,11 @@ jobs:
       fail-fast: false
       matrix:
         apps:
+          - frontend
           - backend
+          - mobile
           - backend,frontend
+          - frontend,mobile
           - backend,mobile
           - frontend,backend,mobile
 
