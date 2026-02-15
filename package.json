@@ -1,6 +1,6 @@
 {
   "name": "create-larastack-app",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Scaffold a Larastack-based monorepo with selectable frontend, backend, and mobile apps.",
   "keywords": [
     "cli",

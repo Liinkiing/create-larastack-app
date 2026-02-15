@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.7.1](https://github.com/Liinkiing/create-larastack-app/compare/v0.7.0...v0.7.1) (2026-02-15)
+
+### Bug Fixes
+
+- copy backend .env.example to .env ([dabbeee](https://github.com/Liinkiing/create-larastack-app/commit/dabbeee9508211c99fd14d1a3fb9951ee75cd227))
+
 # [0.7.0](https://github.com/Liinkiing/create-larastack-app/compare/v0.6.1...v0.7.0) (2026-02-15)
 
 ### Features
