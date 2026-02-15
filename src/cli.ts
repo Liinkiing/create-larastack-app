@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 
 import { Command, InvalidArgumentError } from 'commander'
+import { createRequire } from 'node:module'
 
 import { runCreateApp } from './create.js'
 import { APP_CHOICES, type AppChoice } from './types.js'
+
+const require = createRequire(import.meta.url)
+const { version } = require('../package.json') as { version: string }
 
 function parseAppsOption(value: string): AppChoice[] {
   const parsed = value
@@ -32,7 +36,9 @@ const program = new Command()
 
 program
   .name('create-larastack-app')
+  .version(version, '-v, --version', 'Display CLI version')
   .description('Scaffold a Larastack-based monorepo with selectable applications.')
+  .addHelpText('beforeAll', `create-larastack-app v${version}\n\n`)
   .argument('[directory]', 'Directory to create the project in')
   .option('-n, --name <name>', 'Application display name')
   .option('-a, --apps <apps>', 'Comma-separated app list (frontend,backend,mobile)', parseAppsOption)
