@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { applyConditionalFileRules, pruneCiWorkflows } from '../src/conditional-rules.js'
+import { copyBackendEnvExampleToEnv } from '../src/generate.js'
 
 async function fileExists(path: string): Promise<boolean> {
   try {
@@ -297,6 +298,42 @@ class User
       )
 
       await expect(applyConditionalFileRules(tempDirectory, ['frontend'])).rejects.toThrow('transform must be one of')
+    } finally {
+      await rm(tempDirectory, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('copyBackendEnvExampleToEnv', () => {
+  it('copies backend env example to env file', async () => {
+    const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
+
+    try {
+      const backendDirectory = join(tempDirectory, 'backend')
+      const envExamplePath = join(backendDirectory, '.env.example')
+      const envPath = join(backendDirectory, '.env')
+
+      await mkdir(backendDirectory, { recursive: true })
+      await writeFile(envExamplePath, 'APP_NAME=Larastack\n', 'utf8')
+
+      await copyBackendEnvExampleToEnv(tempDirectory)
+
+      await expect(readFile(envPath, 'utf8')).resolves.toBe('APP_NAME=Larastack\n')
+    } finally {
+      await rm(tempDirectory, { recursive: true, force: true })
+    }
+  })
+
+  it('does nothing when env example is missing', async () => {
+    const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
+
+    try {
+      const backendDirectory = join(tempDirectory, 'backend')
+      const envPath = join(backendDirectory, '.env')
+
+      await mkdir(backendDirectory, { recursive: true })
+      await expect(copyBackendEnvExampleToEnv(tempDirectory)).resolves.toBeUndefined()
+      await expect(fileExists(envPath)).resolves.toBe(false)
     } finally {
       await rm(tempDirectory, { recursive: true, force: true })
     }

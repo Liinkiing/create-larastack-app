@@ -1,6 +1,6 @@
 import { downloadTemplate } from 'giget'
 import { spawnSync } from 'node:child_process'
-import { readFile, rm, writeFile } from 'node:fs/promises'
+import { copyFile, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { parse, stringify } from 'yaml'
 
@@ -104,6 +104,7 @@ async function applyStructuredUpdates(config: GenerationConfig, replacementConte
 
   if (config.selectedApps.includes('backend')) {
     await updateBackendEnvExample(config.targetDirectory, config.projectDisplayName)
+    await copyBackendEnvExampleToEnv(config.targetDirectory)
   }
 
   if (config.selectedApps.includes('mobile')) {
@@ -193,6 +194,17 @@ async function updateBackendEnvExample(targetDirectory: string, projectDisplayNa
 
   if (updated !== content) {
     await writeFile(envPath, updated, 'utf8')
+  }
+}
+
+export async function copyBackendEnvExampleToEnv(targetDirectory: string): Promise<void> {
+  const envExamplePath = join(targetDirectory, 'backend', '.env.example')
+  const envPath = join(targetDirectory, 'backend', '.env')
+
+  try {
+    await copyFile(envExamplePath, envPath)
+  } catch {
+    return
   }
 }
 
