@@ -1,5 +1,11 @@
 # Changelog
 
+# [0.8.0](https://github.com/Liinkiing/create-larastack-app/compare/v0.7.1...v0.8.0) (2026-02-15)
+
+### Features
+
+- **cli:** show version in help and add version flag ([f583bc8](https://github.com/Liinkiing/create-larastack-app/commit/f583bc84b33032eea853619b74daa462b75d199f))
+
 ## [0.7.1](https://github.com/Liinkiing/create-larastack-app/compare/v0.7.0...v0.7.1) (2026-02-15)
 
 ### Bug Fixes
