@@ -6,10 +6,10 @@ import { parse, stringify } from 'yaml'
 
 import type { AppChoice, GenerationConfig, ReplacementContext } from './types.js'
 
+import { applyConditionalFileRules } from './conditional-rules.js'
 import { isBinaryBuffer, walkFiles } from './files.js'
 import { toIdentifierSegment } from './naming.js'
 import { applyReplacements, buildReplacementEntries } from './replacements.js'
-import { APP_CHOICES } from './types.js'
 
 interface GenerationResult {
   warnings: string[]
@@ -34,8 +34,7 @@ export async function generateProject(config: GenerationConfig): Promise<Generat
     force: true,
   })
 
-  await pruneApplications(config.targetDirectory, config.selectedApps)
-  await pruneCiWorkflows(config.targetDirectory, config.selectedApps)
+  await applyConditionalFileRules(config.targetDirectory, config.selectedApps)
   await updateWorkspacePackages(config.targetDirectory, config.selectedApps)
 
   const replacementContext = buildReplacementContext(config)
@@ -55,44 +54,6 @@ export async function generateProject(config: GenerationConfig): Promise<Generat
   }
 
   return { warnings }
-}
-
-const WORKFLOW_FILES_BY_APP: Record<AppChoice, string[]> = {
-  frontend: ['frontend-ci.yaml', 'frontend-ci.yml'],
-  backend: ['backend-ci.yaml', 'backend-ci.yml'],
-  mobile: ['mobile-ci.yaml', 'mobile-ci.yml'],
-}
-
-async function pruneApplications(targetDirectory: string, selectedApps: AppChoice[]): Promise<void> {
-  const selected = new Set(selectedApps)
-  const appFolders: AppChoice[] = ['frontend', 'backend', 'mobile']
-
-  for (const appFolder of appFolders) {
-    if (selected.has(appFolder)) {
-      continue
-    }
-
-    await rm(join(targetDirectory, appFolder), {
-      recursive: true,
-      force: true,
-    })
-  }
-}
-
-export async function pruneCiWorkflows(targetDirectory: string, selectedApps: AppChoice[]): Promise<void> {
-  const selected = new Set(selectedApps)
-
-  for (const app of APP_CHOICES) {
-    if (selected.has(app)) {
-      continue
-    }
-
-    for (const workflowFile of WORKFLOW_FILES_BY_APP[app]) {
-      await rm(join(targetDirectory, '.github', 'workflows', workflowFile), {
-        force: true,
-      })
-    }
-  }
 }
 
 async function updateWorkspacePackages(targetDirectory: string, selectedApps: AppChoice[]): Promise<void> {

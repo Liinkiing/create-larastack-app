@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Liinkiing/create-larastack-app/master/schemas/rules.schema.json",
+  "title": "create-larastack rules manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "rules"],
+  "properties": {
+    "version": {
+      "const": 1,
+      "description": "Manifest schema version."
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/rule"
+      }
+    }
+  },
+  "$defs": {
+    "appChoice": {
+      "type": "string",
+      "enum": ["frontend", "backend", "mobile"]
+    },
+    "conditionClause": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["appSelected"],
+          "properties": {
+            "appSelected": {
+              "$ref": "#/$defs/appChoice"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["appNotSelected"],
+          "properties": {
+            "appNotSelected": {
+              "$ref": "#/$defs/appChoice"
+            }
+          }
+        }
+      ]
+    },
+    "ruleCondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allOf": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/conditionClause"
+          }
+        },
+        "anyOf": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/conditionClause"
+          }
+        },
+        "noneOf": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/conditionClause"
+          }
+        }
+      }
+    },
+    "removeOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "paths"],
+      "properties": {
+        "type": {
+          "const": "remove"
+        },
+        "paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!\\.?$).+"
+          }
+        }
+      }
+    },
+    "copyOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "from", "to"],
+      "properties": {
+        "type": {
+          "const": "copy"
+        },
+        "from": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!\\.?$).+"
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!\\.?$).+"
+        }
+      }
+    },
+    "operation": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/removeOperation"
+        },
+        {
+          "$ref": "#/$defs/copyOperation"
+        }
+      ]
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "operations"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "description": "Unique rule identifier."
+        },
+        "when": {
+          "$ref": "#/$defs/ruleCondition"
+        },
+        "operations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/operation"
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "version": 1,
+      "rules": [
+        {
+          "id": "remove-backend-personal-access-token-migration",
+          "when": {
+            "allOf": [{ "appNotSelected": "mobile" }]
+          },
+          "operations": [
+            {
+              "type": "remove",
+              "paths": ["backend/database/migrations/*personal_access_tokens*"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

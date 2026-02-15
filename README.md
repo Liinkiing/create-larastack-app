@@ -18,6 +18,51 @@ The CLI asks for:
 
 It then customizes placeholders like `Larastack`, `larastack`, and `liinkiing`, updates mobile identifiers, removes unselected app folders, and can initialize a fresh git repository.
 
+## Template conditional file rules
+
+The scaffold supports conditional file operations from a template manifest at:
+
+- `.create-larastack/rules.json`
+
+Manifest format:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/Liinkiing/create-larastack-app/master/schemas/rules.schema.json",
+  "version": 1,
+  "rules": [
+    {
+      "id": "remove-backend-personal-access-token-migration",
+      "when": {
+        "allOf": [{ "appNotSelected": "mobile" }]
+      },
+      "operations": [
+        {
+          "type": "remove",
+          "paths": ["backend/database/migrations/*personal_access_tokens*"]
+        }
+      ]
+    }
+  ]
+}
+```
+
+Schema file in this repo:
+
+- `schemas/rules.schema.json`
+
+Supported operations:
+
+- `remove`: remove files or directories by relative path or glob
+- `copy`: copy file/directory from one relative path to another
+
+Supported conditions:
+
+- `appSelected`: run when an app is selected
+- `appNotSelected`: run when an app is not selected
+
+The `.create-larastack` folder is removed from generated projects after rules are applied.
+
 ## Requirements
 
 - Node.js `>=22`
