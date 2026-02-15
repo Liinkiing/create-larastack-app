@@ -1,5 +1,11 @@
 # Changelog
 
+# [0.7.0](https://github.com/Liinkiing/create-larastack-app/compare/v0.6.1...v0.7.0) (2026-02-15)
+
+### Features
+
+- add conditional template rules engine ([035e3e1](https://github.com/Liinkiing/create-larastack-app/commit/035e3e13ff18e7e281280d86c8b16ddace48c87b))
+
 ## [0.6.1](https://github.com/Liinkiing/create-larastack-app/compare/v0.6.0...v0.6.1) (2026-02-11)
 
 ### Bug Fixes
