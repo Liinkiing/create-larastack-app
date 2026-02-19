@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8.1](https://github.com/Liinkiing/create-larastack-app/compare/v0.8.0...v0.8.1) (2026-02-19)
+
+### Bug Fixes
+
+- generate mobile app.json using root config ([97dbe79](https://github.com/Liinkiing/create-larastack-app/commit/97dbe799616953182f3670c5b5b6bb27ab2a3781))
+
 # [0.8.0](https://github.com/Liinkiing/create-larastack-app/compare/v0.7.1...v0.8.0) (2026-02-15)
 
 ### Features
