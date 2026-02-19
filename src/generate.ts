@@ -15,6 +15,14 @@ interface GenerationResult {
   warnings: string[]
 }
 
+type JsonObject = Record<string, unknown>
+
+type MobileAppJsonConfig = Pick<
+  GenerationConfig,
+  'projectDisplayName' | 'projectSlug' | 'githubUserLower' | 'easProjectId'
+>
+type MobileAppJsonContext = Pick<ReplacementContext, 'mobileBundleId'>
+
 export async function generateProject(config: GenerationConfig): Promise<GenerationResult> {
   if (config.selectedApps.includes('mobile') && !config.mobileAppIdentifier) {
     throw new Error('Mobile app identifier is required when mobile app is selected.')
@@ -154,28 +162,34 @@ async function updateMobileAppJson(
   const appJsonPath = join(targetDirectory, 'mobile', 'app.json')
 
   await updateJsonFile(appJsonPath, data => {
-    const expo = (data.expo ??= {})
-
-    expo.name = config.projectDisplayName
-    expo.slug = config.projectSlug
-    expo.scheme = config.projectSlug
-    expo.owner = config.githubUserLower
-
-    expo.ios ??= {}
-    expo.ios.bundleIdentifier = replacementContext.mobileBundleId
-
-    expo.android ??= {}
-    expo.android.package = replacementContext.mobileBundleId
-
-    if (config.easProjectId) {
-      expo.extra ??= {}
-      expo.extra.eas ??= {}
-      expo.extra.eas.projectId = config.easProjectId
-
-      expo.updates ??= {}
-      expo.updates.url = `https://u.expo.dev/${config.easProjectId}`
-    }
+    applyMobileAppJsonUpdates(data, config, replacementContext)
   })
+}
+
+export function applyMobileAppJsonUpdates(
+  data: JsonObject,
+  config: MobileAppJsonConfig,
+  replacementContext: MobileAppJsonContext,
+): void {
+  data.name = config.projectDisplayName
+  data.slug = config.projectSlug
+  data.scheme = config.projectSlug
+  data.owner = config.githubUserLower
+
+  const ios = ensureObject(data, 'ios')
+  ios.bundleIdentifier = replacementContext.mobileBundleId
+
+  const android = ensureObject(data, 'android')
+  android.package = replacementContext.mobileBundleId
+
+  if (config.easProjectId) {
+    const extra = ensureObject(data, 'extra')
+    const eas = ensureObject(extra, 'eas')
+    eas.projectId = config.easProjectId
+
+    const updates = ensureObject(data, 'updates')
+    updates.url = `https://u.expo.dev/${config.easProjectId}`
+  }
 }
 
 async function updateBackendEnvExample(targetDirectory: string, projectDisplayName: string): Promise<void> {
@@ -217,18 +231,34 @@ function formatEnvValue(value: string): string {
   return `"${escaped}"`
 }
 
-async function updateJsonFile(filePath: string, updater: (data: Record<string, any>) => void): Promise<void> {
-  let parsed: Record<string, any>
+async function updateJsonFile(filePath: string, updater: (data: JsonObject) => void): Promise<void> {
+  let parsed: JsonObject
 
   try {
     const raw = await readFile(filePath, 'utf8')
-    parsed = JSON.parse(raw) as Record<string, any>
+    parsed = JSON.parse(raw) as JsonObject
   } catch {
     return
   }
 
   updater(parsed)
   await writeFile(filePath, `${JSON.stringify(parsed, null, 2)}\n`, 'utf8')
+}
+
+function ensureObject(data: JsonObject, key: string): JsonObject {
+  const value = data[key]
+
+  if (isJsonObject(value)) {
+    return value
+  }
+
+  const next: JsonObject = {}
+  data[key] = next
+  return next
+}
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function buildReplacementContext(config: GenerationConfig): ReplacementContext {

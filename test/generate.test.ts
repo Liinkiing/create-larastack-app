@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { applyConditionalFileRules, pruneCiWorkflows } from '../src/conditional-rules.js'
-import { copyBackendEnvExampleToEnv } from '../src/generate.js'
+import { applyMobileAppJsonUpdates, copyBackendEnvExampleToEnv } from '../src/generate.js'
 
 async function fileExists(path: string): Promise<boolean> {
   try {
@@ -337,5 +337,53 @@ describe('copyBackendEnvExampleToEnv', () => {
     } finally {
       await rm(tempDirectory, { recursive: true, force: true })
     }
+  })
+})
+
+describe('applyMobileAppJsonUpdates', () => {
+  it('updates root-level app json', () => {
+    const appJson: Record<string, unknown> = {
+      name: 'template',
+      ios: {
+        supportsTablet: true,
+      },
+      android: {},
+    }
+
+    applyMobileAppJsonUpdates(
+      appJson,
+      {
+        projectDisplayName: 'My App',
+        projectSlug: 'my-app',
+        githubUserLower: 'octocat',
+        easProjectId: 'project-123',
+      },
+      {
+        mobileBundleId: 'com.octocat.myapp',
+      },
+    )
+
+    expect(appJson).toMatchObject({
+      name: 'My App',
+      slug: 'my-app',
+      scheme: 'my-app',
+      owner: 'octocat',
+      ios: {
+        supportsTablet: true,
+        bundleIdentifier: 'com.octocat.myapp',
+      },
+      android: {
+        package: 'com.octocat.myapp',
+      },
+      extra: {
+        eas: {
+          projectId: 'project-123',
+        },
+      },
+      updates: {
+        url: 'https://u.expo.dev/project-123',
+      },
+    })
+    expect(appJson.expo).toBeUndefined()
   })
 })
