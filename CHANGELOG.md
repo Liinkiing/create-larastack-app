@@ -1,5 +1,11 @@
 # Changelog
 
+# [0.9.0](https://github.com/Liinkiing/create-larastack-app/compare/v0.8.1...v0.9.0) (2026-03-03)
+
+### Features
+
+- add conditional oxfmt overrides transformer ([64ab72a](https://github.com/Liinkiing/create-larastack-app/commit/64ab72a42d3c3eb8d3a06eb1303bfb08181c27c9))
+
 ## [0.8.1](https://github.com/Liinkiing/create-larastack-app/compare/v0.8.0...v0.8.1) (2026-02-19)
 
 ### Bug Fixes
