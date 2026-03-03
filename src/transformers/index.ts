@@ -5,6 +5,7 @@ import type { TransformExecutionContext, Transformer } from './types.js'
 
 import { transformEnvBackend } from './env-backend.js'
 import { transformJsonOpencode } from './json-opencode.js'
+import { transformJsonOxfmt } from './json-oxfmt.js'
 import { transformPhpConfigServices } from './php-config-services.js'
 import { transformPhpMigrationUsers } from './php-migration-users.js'
 import { transformPhpRoutesApi } from './php-routes-api.js'
@@ -21,6 +22,7 @@ const TRANSFORMERS: Record<TransformerId, Transformer> = {
   'env.backend.applyProfile': transformEnvBackend,
   'yaml.graphql.syncProjects': transformYamlGraphql,
   'json.opencode.syncMcp': transformJsonOpencode,
+  'json.oxfmt.syncOverrides': transformJsonOxfmt,
 }
 
 export async function executeNamedTransform(context: TransformExecutionContext): Promise<void> {
@@ -36,6 +38,7 @@ export async function executeNamedTransform(context: TransformExecutionContext):
 
 export { AVAILABLE_TRANSFORMERS } from './ids.js'
 export { transformEnvBackend } from './env-backend.js'
+export { transformJsonOxfmt } from './json-oxfmt.js'
 export { transformJsonOpencode } from './json-opencode.js'
 export { transformPhpConfigServices } from './php-config-services.js'
 export { transformPhpMigrationUsers } from './php-migration-users.js'

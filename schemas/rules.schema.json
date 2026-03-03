@@ -119,7 +119,8 @@
         "php.config.services.applyProfile",
         "env.backend.applyProfile",
         "yaml.graphql.syncProjects",
-        "json.opencode.syncMcp"
+        "json.opencode.syncMcp",
+        "json.oxfmt.syncOverrides"
       ],
       "description": "Named transform implemented by create-larastack-app."
     },
@@ -205,7 +206,7 @@
           "if": {
             "properties": {
               "transform": {
-                "enum": ["yaml.graphql.syncProjects", "json.opencode.syncMcp"]
+                "enum": ["yaml.graphql.syncProjects", "json.opencode.syncMcp", "json.oxfmt.syncOverrides"]
               }
             },
             "required": ["transform"]

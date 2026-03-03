@@ -19,6 +19,7 @@ const EXPECTED_COPY_PATHS = [
   'mobile',
   'graphql.config.yml',
   'opencode.json',
+  '.oxfmtrc.json',
 ]
 
 void main()
@@ -55,6 +56,7 @@ async function main(): Promise<void> {
 
   await assertGraphqlProjects(tempDirectory, selectedAppsSet)
   await assertOpencodeConfig(tempDirectory, selectedAppsSet)
+  await assertOxfmtOverrides(tempDirectory, selectedAppsSet)
 
   if (selectedAppsSet.has('backend')) {
     await assertBackendBehavior(tempDirectory, selectedAppsSet)
@@ -130,6 +132,31 @@ async function assertOpencodeConfig(tempDirectory: string, selectedAppsSet: Set<
   await assertCondition(
     hasPanda === selectedAppsSet.has('frontend'),
     `opencode.json panda mismatch for selected apps ${[...selectedAppsSet].join(',')}`,
+  )
+}
+
+async function assertOxfmtOverrides(tempDirectory: string, selectedAppsSet: Set<AppChoice>): Promise<void> {
+  const oxfmtRaw = await readFile(join(tempDirectory, '.oxfmtrc.json'), 'utf8')
+  const oxfmtConfig = JSON.parse(oxfmtRaw) as Record<string, unknown>
+  const overrides = Array.isArray(oxfmtConfig.overrides) ? oxfmtConfig.overrides : []
+
+  const hasMobileOverride = overrides.some(
+    override =>
+      isRecord(override) && Array.isArray(override.files) && override.files.some(file => file === 'mobile/**/*'),
+  )
+
+  const hasBackendOverride = overrides.some(
+    override =>
+      isRecord(override) && Array.isArray(override.files) && override.files.some(file => file === 'backend/**/*'),
+  )
+
+  await assertCondition(
+    hasMobileOverride === selectedAppsSet.has('mobile'),
+    `oxfmt mobile override mismatch for selected apps ${[...selectedAppsSet].join(',')}`,
+  )
+  await assertCondition(
+    hasBackendOverride === selectedAppsSet.has('backend'),
+    `oxfmt backend override mismatch for selected apps ${[...selectedAppsSet].join(',')}`,
   )
 }
 

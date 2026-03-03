@@ -7,6 +7,7 @@ export const AVAILABLE_TRANSFORMERS = [
   'env.backend.applyProfile',
   'yaml.graphql.syncProjects',
   'json.opencode.syncMcp',
+  'json.oxfmt.syncOverrides',
 ] as const
 
 export type TransformerId = (typeof AVAILABLE_TRANSFORMERS)[number]

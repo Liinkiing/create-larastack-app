@@ -80,6 +80,7 @@ Transform ids are predefined by the CLI implementation and validated by schema. 
 - `env.backend.applyProfile`
 - `yaml.graphql.syncProjects`
 - `json.opencode.syncMcp`
+- `json.oxfmt.syncOverrides`
 
 Canonical source for transform ids in code:
 
@@ -89,7 +90,7 @@ Transform option validation is also schema-enforced:
 
 - `php.user.applyProfile`, `php.routes.api.applyProfile`, `php.migration.users.applyProfile`, `php.config.services.applyProfile`, `env.backend.applyProfile` require `options.profile` in `no-mobile | backend-only`
 - `php.routes.web.applyProfile` requires `options.profile = no-frontend`
-- `yaml.graphql.syncProjects` and `json.opencode.syncMcp` do not accept `options`
+- `yaml.graphql.syncProjects`, `json.opencode.syncMcp`, and `json.oxfmt.syncOverrides` do not accept `options`
 
 Supported conditions:
 

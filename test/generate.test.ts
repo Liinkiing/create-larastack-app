@@ -266,6 +266,83 @@ class User
     }
   })
 
+  it('applies oxfmt transform based on selected apps', async () => {
+    const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
+
+    try {
+      await mkdir(join(tempDirectory, '.create-larastack'), { recursive: true })
+
+      const oxfmtPath = join(tempDirectory, '.oxfmtrc.json')
+
+      await writeFile(
+        oxfmtPath,
+        JSON.stringify(
+          {
+            semi: false,
+            overrides: [
+              {
+                files: ['mobile/**/*'],
+                options: {
+                  sortTailwindcss: {
+                    stylesheet: './mobile/src/global.css',
+                    functions: ['clsx', 'cn', 'cva', 'tv'],
+                    preserveWhitespace: true,
+                  },
+                },
+              },
+              {
+                files: ['backend/**/*'],
+                options: {
+                  sortTailwindcss: {
+                    config: './backend/tailwind.config.js',
+                    preserveWhitespace: true,
+                  },
+                },
+              },
+            ],
+          },
+          null,
+          2,
+        ),
+        'utf8',
+      )
+
+      await writeFile(
+        join(tempDirectory, '.create-larastack', 'rules.json'),
+        JSON.stringify(
+          {
+            version: 1,
+            rules: [
+              {
+                id: 'sync-oxfmt-config',
+                operations: [
+                  {
+                    type: 'transform',
+                    path: '.oxfmtrc.json',
+                    transform: 'json.oxfmt.syncOverrides',
+                  },
+                ],
+              },
+            ],
+          },
+          null,
+          2,
+        ),
+        'utf8',
+      )
+
+      await applyConditionalFileRules(tempDirectory, ['frontend'])
+
+      const output = JSON.parse(await readFile(oxfmtPath, 'utf8')) as { overrides?: Array<{ files?: string[] }> }
+      const overrides = output.overrides ?? []
+
+      expect(overrides.some(override => override.files?.includes('mobile/**/*'))).toBe(false)
+      expect(overrides.some(override => override.files?.includes('backend/**/*'))).toBe(false)
+    } finally {
+      await rm(tempDirectory, { recursive: true, force: true })
+    }
+  })
+
   it('fails in strict mode for unknown transform ids', async () => {
     const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
 
