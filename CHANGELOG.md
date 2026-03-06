@@ -1,5 +1,11 @@
 # Changelog
 
+# [0.10.0](https://github.com/Liinkiing/create-larastack-app/compare/v0.9.0...v0.10.0) (2026-03-06)
+
+### Features
+
+- sync codex and opencode MCP by app selection ([08abd7c](https://github.com/Liinkiing/create-larastack-app/commit/08abd7cf542687a2389bbf9013904f18f922f494))
+
 # [0.9.0](https://github.com/Liinkiing/create-larastack-app/compare/v0.8.1...v0.9.0) (2026-03-03)
 
 ### Features
