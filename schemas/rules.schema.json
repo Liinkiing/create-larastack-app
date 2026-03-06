@@ -120,7 +120,8 @@
         "env.backend.applyProfile",
         "yaml.graphql.syncProjects",
         "json.opencode.syncMcp",
-        "json.oxfmt.syncOverrides"
+        "json.oxfmt.syncOverrides",
+        "toml.codex.syncMcp"
       ],
       "description": "Named transform implemented by create-larastack-app."
     },
@@ -206,7 +207,12 @@
           "if": {
             "properties": {
               "transform": {
-                "enum": ["yaml.graphql.syncProjects", "json.opencode.syncMcp", "json.oxfmt.syncOverrides"]
+                "enum": [
+                  "yaml.graphql.syncProjects",
+                  "json.opencode.syncMcp",
+                  "json.oxfmt.syncOverrides",
+                  "toml.codex.syncMcp"
+                ]
               }
             },
             "required": ["transform"]

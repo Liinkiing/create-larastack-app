@@ -14,6 +14,7 @@ interface SmokeArguments {
 const EXPECTED_COPY_PATHS = [
   '.create-larastack',
   '.github',
+  '.codex',
   'backend',
   'frontend',
   'mobile',
@@ -55,6 +56,7 @@ async function main(): Promise<void> {
   }
 
   await assertGraphqlProjects(tempDirectory, selectedAppsSet)
+  await assertCodexConfig(tempDirectory, selectedAppsSet)
   await assertOpencodeConfig(tempDirectory, selectedAppsSet)
   await assertOxfmtOverrides(tempDirectory, selectedAppsSet)
 
@@ -124,7 +126,10 @@ async function assertOpencodeConfig(tempDirectory: string, selectedAppsSet: Set<
   const hasLaravelBoost = Object.hasOwn(mcp, 'laravel-boost')
   const hasPanda = Object.hasOwn(mcp, 'panda')
 
-  await assertCondition(hasArk, 'opencode.json must always include ark-ui MCP server.')
+  await assertCondition(
+    hasArk === selectedAppsSet.has('frontend'),
+    `opencode.json ark-ui mismatch for selected apps ${[...selectedAppsSet].join(',')}`,
+  )
   await assertCondition(
     hasLaravelBoost === selectedAppsSet.has('backend'),
     `opencode.json laravel-boost mismatch for selected apps ${[...selectedAppsSet].join(',')}`,
@@ -132,6 +137,27 @@ async function assertOpencodeConfig(tempDirectory: string, selectedAppsSet: Set<
   await assertCondition(
     hasPanda === selectedAppsSet.has('frontend'),
     `opencode.json panda mismatch for selected apps ${[...selectedAppsSet].join(',')}`,
+  )
+}
+
+async function assertCodexConfig(tempDirectory: string, selectedAppsSet: Set<AppChoice>): Promise<void> {
+  const codexRaw = await readFile(join(tempDirectory, '.codex', 'config.toml'), 'utf8')
+
+  const hasArk = codexRaw.includes('[mcp_servers.ark-ui]')
+  const hasLaravelBoost = codexRaw.includes('[mcp_servers.laravel-boost]')
+  const hasPanda = codexRaw.includes('[mcp_servers.panda]')
+
+  await assertCondition(
+    hasArk === selectedAppsSet.has('frontend'),
+    `.codex/config.toml ark-ui mismatch for selected apps ${[...selectedAppsSet].join(',')}`,
+  )
+  await assertCondition(
+    hasLaravelBoost === selectedAppsSet.has('backend'),
+    `.codex/config.toml laravel-boost mismatch for selected apps ${[...selectedAppsSet].join(',')}`,
+  )
+  await assertCondition(
+    hasPanda === selectedAppsSet.has('frontend'),
+    `.codex/config.toml panda mismatch for selected apps ${[...selectedAppsSet].join(',')}`,
   )
 }
 

@@ -343,6 +343,73 @@ class User
     }
   })
 
+  it('applies codex transform based on selected apps', async () => {
+    const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
+
+    try {
+      await mkdir(join(tempDirectory, '.create-larastack'), { recursive: true })
+      await mkdir(join(tempDirectory, '.codex'), { recursive: true })
+
+      const codexConfigPath = join(tempDirectory, '.codex', 'config.toml')
+
+      await writeFile(
+        codexConfigPath,
+        `[mcp_servers.custom]
+command = "custom"
+args = ["serve"]
+
+[mcp_servers.laravel-boost]
+command = "docker"
+args = ["old"]
+
+[mcp_servers.ark-ui]
+command = "npx"
+args = ["old"]
+
+[mcp_servers.panda]
+command = "pnpm"
+args = ["old"]
+`,
+        'utf8',
+      )
+
+      await writeFile(
+        join(tempDirectory, '.create-larastack', 'rules.json'),
+        JSON.stringify(
+          {
+            version: 1,
+            rules: [
+              {
+                id: 'sync-codex-config',
+                operations: [
+                  {
+                    type: 'transform',
+                    path: '.codex/config.toml',
+                    transform: 'toml.codex.syncMcp',
+                  },
+                ],
+              },
+            ],
+          },
+          null,
+          2,
+        ),
+        'utf8',
+      )
+
+      await applyConditionalFileRules(tempDirectory, ['backend'])
+
+      const output = await readFile(codexConfigPath, 'utf8')
+
+      expect(output).toContain('[mcp_servers.custom]')
+      expect(output).toContain('[mcp_servers.laravel-boost]')
+      expect(output).not.toContain('[mcp_servers.ark-ui]')
+      expect(output).not.toContain('[mcp_servers.panda]')
+    } finally {
+      await rm(tempDirectory, { recursive: true, force: true })
+    }
+  })
+
   it('fails in strict mode for unknown transform ids', async () => {
     const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
 

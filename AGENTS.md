@@ -142,6 +142,7 @@ Guidance for coding agents working in `create-larastack-app`.
 - Prefer focused tests with temp directories (`mkdtemp`) and real file ops for scaffold behavior.
 - Assert both positive and negative paths (e.g., file removed vs retained).
 - Keep test names explicit and scenario-driven.
+- Do not run template smoke/integration tests locally by default; rely on CI for those heavier end-to-end checks unless the user explicitly asks for a local smoke run.
 
 ## 15) Docs and Schema Expectations
 

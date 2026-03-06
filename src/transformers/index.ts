@@ -11,6 +11,7 @@ import { transformPhpMigrationUsers } from './php-migration-users.js'
 import { transformPhpRoutesApi } from './php-routes-api.js'
 import { transformPhpRoutesWeb } from './php-routes-web.js'
 import { transformPhpUser } from './php-user.js'
+import { transformTomlCodex } from './toml-codex.js'
 import { transformYamlGraphql } from './yaml-graphql.js'
 
 const TRANSFORMERS: Record<TransformerId, Transformer> = {
@@ -23,6 +24,7 @@ const TRANSFORMERS: Record<TransformerId, Transformer> = {
   'yaml.graphql.syncProjects': transformYamlGraphql,
   'json.opencode.syncMcp': transformJsonOpencode,
   'json.oxfmt.syncOverrides': transformJsonOxfmt,
+  'toml.codex.syncMcp': transformTomlCodex,
 }
 
 export async function executeNamedTransform(context: TransformExecutionContext): Promise<void> {
@@ -45,6 +47,7 @@ export { transformPhpMigrationUsers } from './php-migration-users.js'
 export { transformPhpRoutesApi } from './php-routes-api.js'
 export { transformPhpRoutesWeb } from './php-routes-web.js'
 export { transformPhpUser } from './php-user.js'
+export { transformTomlCodex } from './toml-codex.js'
 export type { TransformerId } from './ids.js'
 export type { TransformExecutionContext, TransformOperation, Transformer, TransformerInput } from './types.js'
 export { transformYamlGraphql } from './yaml-graphql.js'
