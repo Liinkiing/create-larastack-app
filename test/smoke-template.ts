@@ -125,6 +125,7 @@ async function assertOpencodeConfig(tempDirectory: string, selectedAppsSet: Set<
   const hasArk = Object.hasOwn(mcp, 'ark-ui')
   const hasLaravelBoost = Object.hasOwn(mcp, 'laravel-boost')
   const hasPanda = Object.hasOwn(mcp, 'panda')
+  const hasUniwind = Object.hasOwn(mcp, 'uniwind')
 
   await assertCondition(
     hasArk === selectedAppsSet.has('frontend'),
@@ -138,6 +139,10 @@ async function assertOpencodeConfig(tempDirectory: string, selectedAppsSet: Set<
     hasPanda === selectedAppsSet.has('frontend'),
     `opencode.json panda mismatch for selected apps ${[...selectedAppsSet].join(',')}`,
   )
+  await assertCondition(
+    hasUniwind === selectedAppsSet.has('mobile'),
+    `opencode.json uniwind mismatch for selected apps ${[...selectedAppsSet].join(',')}`,
+  )
 }
 
 async function assertCodexConfig(tempDirectory: string, selectedAppsSet: Set<AppChoice>): Promise<void> {
@@ -146,6 +151,7 @@ async function assertCodexConfig(tempDirectory: string, selectedAppsSet: Set<App
   const hasArk = codexRaw.includes('[mcp_servers.ark-ui]')
   const hasLaravelBoost = codexRaw.includes('[mcp_servers.laravel-boost]')
   const hasPanda = codexRaw.includes('[mcp_servers.panda]')
+  const hasUniwind = codexRaw.includes('[mcp_servers.uniwind]')
 
   await assertCondition(
     hasArk === selectedAppsSet.has('frontend'),
@@ -158,6 +164,10 @@ async function assertCodexConfig(tempDirectory: string, selectedAppsSet: Set<App
   await assertCondition(
     hasPanda === selectedAppsSet.has('frontend'),
     `.codex/config.toml panda mismatch for selected apps ${[...selectedAppsSet].join(',')}`,
+  )
+  await assertCondition(
+    hasUniwind === selectedAppsSet.has('mobile'),
+    `.codex/config.toml uniwind mismatch for selected apps ${[...selectedAppsSet].join(',')}`,
   )
 }
 

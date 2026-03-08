@@ -2,7 +2,7 @@ import type { Transformer } from './types.js'
 
 import { readTextFile, writeIfChanged } from './shared.js'
 
-const MANAGED_SERVER_NAMES = new Set(['laravel-boost', 'ark-ui', 'panda'])
+const MANAGED_SERVER_NAMES = new Set(['laravel-boost', 'ark-ui', 'panda', 'uniwind'])
 
 export const transformTomlCodex: Transformer = async ({ filePath, ruleId, selectedApps }) => {
   const source = await readTextFile(filePath, ruleId)
@@ -60,6 +60,10 @@ function buildManagedSections(selectedApps: Set<string>): string[] {
     sections.push(
       ['[mcp_servers.panda]', 'command = "pnpm"', 'args = ["--filter", "frontend", "exec", "panda", "mcp"]'].join('\n'),
     )
+  }
+
+  if (selectedApps.has('mobile')) {
+    sections.push(['[mcp_servers.uniwind]', 'url = "https://docs.uniwind.dev/mcp"'].join('\n'))
   }
 
   return sections

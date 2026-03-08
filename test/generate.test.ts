@@ -369,6 +369,9 @@ args = ["old"]
 [mcp_servers.panda]
 command = "pnpm"
 args = ["old"]
+
+[mcp_servers.uniwind]
+url = "https://old.example.com/mcp"
 `,
         'utf8',
       )
@@ -405,6 +408,95 @@ args = ["old"]
       expect(output).toContain('[mcp_servers.laravel-boost]')
       expect(output).not.toContain('[mcp_servers.ark-ui]')
       expect(output).not.toContain('[mcp_servers.panda]')
+      expect(output).not.toContain('[mcp_servers.uniwind]')
+    } finally {
+      await rm(tempDirectory, { recursive: true, force: true })
+    }
+  })
+
+  it('applies opencode transform based on selected apps', async () => {
+    const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
+
+    try {
+      await mkdir(join(tempDirectory, '.create-larastack'), { recursive: true })
+
+      const opencodeConfigPath = join(tempDirectory, 'opencode.json')
+
+      await writeFile(
+        opencodeConfigPath,
+        JSON.stringify(
+          {
+            $schema: 'https://opencode.ai/config.json',
+            mcp: {
+              custom: {
+                type: 'local',
+                command: ['custom', 'serve'],
+                enabled: true,
+              },
+              'laravel-boost': {
+                type: 'local',
+                command: ['old'],
+                enabled: true,
+              },
+              'ark-ui': {
+                type: 'local',
+                command: ['old'],
+                enabled: true,
+              },
+              panda: {
+                type: 'local',
+                command: ['old'],
+                enabled: true,
+              },
+              uniwind: {
+                type: 'remote',
+                url: 'https://old.example.com/mcp',
+                enabled: true,
+              },
+            },
+          },
+          null,
+          2,
+        ),
+        'utf8',
+      )
+
+      await writeFile(
+        join(tempDirectory, '.create-larastack', 'rules.json'),
+        JSON.stringify(
+          {
+            version: 1,
+            rules: [
+              {
+                id: 'sync-opencode-config',
+                operations: [
+                  {
+                    type: 'transform',
+                    path: 'opencode.json',
+                    transform: 'json.opencode.syncMcp',
+                  },
+                ],
+              },
+            ],
+          },
+          null,
+          2,
+        ),
+        'utf8',
+      )
+
+      await applyConditionalFileRules(tempDirectory, ['mobile'])
+
+      const output = JSON.parse(await readFile(opencodeConfigPath, 'utf8')) as {
+        mcp?: Record<string, unknown>
+      }
+
+      expect(output.mcp).toBeDefined()
+      expect(output.mcp).toHaveProperty('custom')
+      expect(output.mcp).not.toHaveProperty('laravel-boost')
+      expect(output.mcp).not.toHaveProperty('ark-ui')
+      expect(output.mcp).not.toHaveProperty('panda')
+      expect(output.mcp).toHaveProperty('uniwind')
     } finally {
       await rm(tempDirectory, { recursive: true, force: true })
     }

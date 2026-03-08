@@ -14,7 +14,7 @@ export const transformJsonOpencode: Transformer = async ({ filePath, selectedApp
   const nextMcp: Record<string, unknown> = {}
 
   for (const [key, value] of Object.entries(existingMcp)) {
-    if (key === 'laravel-boost' || key === 'ark-ui' || key === 'panda') {
+    if (key === 'laravel-boost' || key === 'ark-ui' || key === 'panda' || key === 'uniwind') {
       continue
     }
 
@@ -39,6 +39,14 @@ export const transformJsonOpencode: Transformer = async ({ filePath, selectedApp
     nextMcp.panda = {
       type: 'local',
       command: ['pnpm', '--filter', 'frontend', 'exec', 'panda', 'mcp'],
+      enabled: true,
+    }
+  }
+
+  if (selectedApps.has('mobile')) {
+    nextMcp.uniwind = {
+      type: 'remote',
+      url: 'https://docs.uniwind.dev/mcp',
       enabled: true,
     }
   }
