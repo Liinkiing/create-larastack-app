@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.11.1](https://github.com/Liinkiing/create-larastack-app/compare/v0.11.0...v0.11.1) (2026-05-29)
+
+### Bug Fixes
+
+- updated next steps text ([98b048d](https://github.com/Liinkiing/create-larastack-app/commit/98b048d35e097eb20e9a2659b0096d42817a2605))
+
 # [0.11.0](https://github.com/Liinkiing/create-larastack-app/compare/v0.10.0...v0.11.0) (2026-03-08)
 
 ### Features
