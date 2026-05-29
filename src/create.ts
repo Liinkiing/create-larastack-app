@@ -178,7 +178,7 @@ export async function runCreateApp(options: CliRunOptions): Promise<void> {
   }
 
   if (selectedApps.includes('mobile')) {
-    nextSteps.push('pnpm --filter ./mobile start')
+    nextSteps.push('pnpm --filter ./mobile dev')
   }
 
   outro(`Done!\n\nNext steps:\n  ${nextSteps.join('\n  ')}`)
