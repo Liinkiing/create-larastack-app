@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.2](https://github.com/Liinkiing/create-larastack-app/compare/v0.11.1...v0.11.2) (2026-06-08)
+
+### Bug Fixes
+
+- keep template pnpm lockfile ([c7a519a](https://github.com/Liinkiing/create-larastack-app/commit/c7a519a0009f43557bacd63e80050ae4bea4e1fa))
+- remove prefixed mobile API routes ([d0dfeea](https://github.com/Liinkiing/create-larastack-app/commit/d0dfeea7d782bd6496dfd72b47827527a7a22e0f))
+
 ## [0.11.1](https://github.com/Liinkiing/create-larastack-app/compare/v0.11.0...v0.11.1) (2026-05-29)
 
 ### Bug Fixes
