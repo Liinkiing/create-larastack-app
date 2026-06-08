@@ -25,21 +25,21 @@ jobs:
 
     steps:
       - name: Checkout CLI repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Checkout Larastack template repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: Liinkiing/larastack
           path: larastack-template
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           run_install: false
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
