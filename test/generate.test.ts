@@ -247,7 +247,7 @@ class User
     }
   })
 
-  it('removes mobile auth routes from prefixed API route groups', async () => {
+  it('removes prefixed mobile API route groups', async () => {
     const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
 
     try {
@@ -265,6 +265,8 @@ use App\\Http\\Controllers\\Auth\\MobileGoogleAuthController;
 use App\\Http\\Controllers\\Auth\\MobileTokenController;
 use Illuminate\\Http\\Request;
 use Illuminate\\Support\\Facades\\Route;
+
+Route::get('/health', static fn () => ['ok' => true]);
 
 Route::group(['prefix' => 'mobile'], static function () {
     Route::post('/auth/apple', MobileAppleAuthController::class)
@@ -329,8 +331,9 @@ Route::group(['prefix' => 'mobile'], static function () {
       expect(output).not.toContain("Route::post('/auth/apple'")
       expect(output).not.toContain("Route::post('/auth/google'")
       expect(output).not.toContain("Route::post('/auth/logout'")
-      expect(output).toContain("Route::group(['prefix' => 'mobile']")
-      expect(output).toContain("Route::middleware('auth:sanctum')->get('/user'")
+      expect(output).not.toContain("Route::group(['prefix' => 'mobile']")
+      expect(output).not.toContain("Route::middleware('auth:sanctum')->get('/user'")
+      expect(output).toContain("Route::get('/health'")
     } finally {
       await rm(tempDirectory, { recursive: true, force: true })
     }

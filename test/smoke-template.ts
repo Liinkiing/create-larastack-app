@@ -262,14 +262,11 @@ async function assertBackendBehavior(tempDirectory: string, selectedAppsSet: Set
     const apiRoutes = await readFile(join(tempDirectory, 'backend/routes/api.php'), 'utf8')
 
     await assertCondition(
-      !apiRoutes.includes("Route::post('/auth/apple'") &&
+      !apiRoutes.includes("Route::group(['prefix' => 'mobile']") &&
+        !apiRoutes.includes("Route::post('/auth/apple'") &&
         !apiRoutes.includes("Route::post('/auth/google'") &&
         !apiRoutes.includes("Route::post('/auth/logout'"),
-      'API routes should remove mobile auth routes when mobile app is not selected.',
-    )
-    await assertCondition(
-      apiRoutes.includes('/user'),
-      'API routes should keep /user route for backend+frontend profile.',
+      'API routes should remove the mobile route group when mobile app is not selected.',
     )
     await assertCondition(
       userModel.includes('google_token') && userModel.includes('google_refresh_token'),

@@ -300,6 +300,27 @@ export function removeRouteStatements(source: string, magic: MagicString, ast: P
   }
 }
 
+export function removeRouteGroupsByPrefix(
+  source: string,
+  magic: MagicString,
+  ast: PhpNode,
+  routePrefixes: string[],
+): void {
+  const targetPrefixes = new Set(routePrefixes.map(normalizeRoutePrefix))
+  const statements = findNodes(ast, node => node.kind === 'expressionstatement')
+
+  for (const statement of statements) {
+    const routePrefix = extractRouteGroupPrefix(statement)
+
+    if (!routePrefix || !targetPrefixes.has(normalizeRoutePrefix(routePrefix))) {
+      continue
+    }
+
+    const [start, end] = wholeLineRange(source, statement, 'route group')
+    magic.remove(start, end)
+  }
+}
+
 export function readTableColumnName(statement: PhpNode): string | undefined {
   if (!isRecord(statement.expression) || statement.expression.kind !== 'call') {
     return undefined
@@ -392,6 +413,50 @@ function extractRoutePath(statement: PhpNode): string | undefined {
   return extractRoutePathFromCall(statement.expression)
 }
 
+function extractRouteGroupPrefix(statement: PhpNode): string | undefined {
+  if (!isRecord(statement.expression)) {
+    return undefined
+  }
+
+  return extractRouteGroupPrefixFromCall(statement.expression)
+}
+
+function extractRouteGroupPrefixFromCall(node: PhpNode): string | undefined {
+  if (node.kind !== 'call' || !isRecord(node.what)) {
+    return undefined
+  }
+
+  if (isStaticRouteCall(node, 'group')) {
+    return readRouteGroupArrayPrefix(node)
+  }
+
+  if (
+    node.what.kind === 'propertylookup' &&
+    readIdentifierName(node.what.offset) === 'group' &&
+    isRecord(node.what.what)
+  ) {
+    return extractRoutePrefixFromCallChain(node.what.what)
+  }
+
+  return undefined
+}
+
+function extractRoutePrefixFromCallChain(node: PhpNode): string | undefined {
+  if (node.kind !== 'call' || !isRecord(node.what)) {
+    return undefined
+  }
+
+  if (isStaticRouteCall(node, 'prefix') || isPropertyRouteCall(node, 'prefix')) {
+    return readFirstStringArgument(node)
+  }
+
+  if (node.what.kind === 'propertylookup' && isRecord(node.what.what)) {
+    return extractRoutePrefixFromCallChain(node.what.what)
+  }
+
+  return undefined
+}
+
 function extractRoutePathFromCall(node: PhpNode): string | undefined {
   if (node.kind !== 'call' || !isRecord(node.what)) {
     return undefined
@@ -420,6 +485,67 @@ function extractRoutePathFromCall(node: PhpNode): string | undefined {
   }
 
   return undefined
+}
+
+function readRouteGroupArrayPrefix(callNode: PhpNode): string | undefined {
+  if (!Array.isArray(callNode.arguments) || callNode.arguments.length === 0) {
+    return undefined
+  }
+
+  const firstArgument = callNode.arguments[0]
+
+  if (!isRecord(firstArgument) || firstArgument.kind !== 'array' || !Array.isArray(firstArgument.items)) {
+    return undefined
+  }
+
+  for (const item of firstArgument.items) {
+    if (!isRecord(item) || item.kind !== 'entry') {
+      continue
+    }
+
+    const key = readPhpStringValue(item.key)
+
+    if (key !== 'prefix') {
+      continue
+    }
+
+    return readPhpStringValue(item.value)
+  }
+
+  return undefined
+}
+
+function isStaticRouteCall(callNode: PhpNode, methodName: string): boolean {
+  if (callNode.kind !== 'call' || !isRecord(callNode.what) || callNode.what.kind !== 'staticlookup') {
+    return false
+  }
+
+  return (
+    isRecord(callNode.what.what) &&
+    callNode.what.what.kind === 'name' &&
+    callNode.what.what.name === 'Route' &&
+    readIdentifierName(callNode.what.offset) === methodName
+  )
+}
+
+function isPropertyRouteCall(callNode: PhpNode, methodName: string): boolean {
+  if (callNode.kind !== 'call' || !isRecord(callNode.what) || callNode.what.kind !== 'propertylookup') {
+    return false
+  }
+
+  return readIdentifierName(callNode.what.offset) === methodName
+}
+
+function readFirstStringArgument(callNode: PhpNode): string | undefined {
+  if (!Array.isArray(callNode.arguments) || callNode.arguments.length === 0) {
+    return undefined
+  }
+
+  return readPhpStringValue(callNode.arguments[0])
+}
+
+function normalizeRoutePrefix(prefix: string): string {
+  return prefix.replace(/^\/+|\/+$/g, '')
 }
 
 function nodeRange(node: PhpNode, context: string): [number, number] {

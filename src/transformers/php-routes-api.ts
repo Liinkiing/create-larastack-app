@@ -7,7 +7,7 @@ import {
   parsePhp,
   readProfileOption,
   readTextFile,
-  removeRouteStatements,
+  removeRouteGroupsByPrefix,
   removeUseImports,
   writeIfChanged,
 } from './shared.js'
@@ -32,7 +32,7 @@ export const transformPhpRoutesApi: Transformer = async ({ filePath, options, ru
         'App\\Http\\Controllers\\Auth\\MobileGoogleAuthController',
         'App\\Http\\Controllers\\Auth\\MobileTokenController',
       ])
-      removeRouteStatements(source, magic, ast, ['/auth/apple', '/auth/google', '/auth/logout'])
+      removeRouteGroupsByPrefix(source, magic, ast, ['mobile'])
 
       output = magic.toString()
       break
