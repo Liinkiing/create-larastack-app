@@ -1,10 +1,15 @@
+import { downloadTemplate } from 'giget'
 import { access, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { applyConditionalFileRules, pruneCiWorkflows } from '../src/conditional-rules.js'
-import { applyMobileAppJsonUpdates, copyBackendEnvExampleToEnv } from '../src/generate.js'
+import { applyMobileAppJsonUpdates, copyBackendEnvExampleToEnv, generateProject } from '../src/generate.js'
+
+vi.mock('giget', () => ({
+  downloadTemplate: vi.fn(),
+}))
 
 async function fileExists(path: string): Promise<boolean> {
   try {
@@ -40,6 +45,44 @@ describe('pruneCiWorkflows', () => {
       await expect(fileExists(mobileWorkflowPath)).resolves.toBe(false)
     } finally {
       await rm(tempDirectory, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('generateProject', () => {
+  it('keeps the template pnpm lockfile for frozen installs', async () => {
+    const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
+
+    try {
+      vi.mocked(downloadTemplate).mockImplementationOnce(async (_source, options) => {
+        const directory = String(options?.dir)
+
+        await writeFile(join(directory, 'package.json'), '{}\n', 'utf8')
+        await writeFile(join(directory, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n', 'utf8')
+
+        return {
+          dir: directory,
+          source: 'mock-template',
+        }
+      })
+
+      await generateProject({
+        targetDirectory: tempDirectory,
+        projectDisplayName: 'Test App',
+        projectSlug: 'test-app',
+        selectedApps: [],
+        githubUser: 'Liinkiing',
+        githubUserLower: 'liinkiing',
+        author: 'Liinkiing',
+        templateSource: 'mock-template',
+        templateRef: 'main',
+        initializeGit: false,
+      })
+
+      await expect(readFile(join(tempDirectory, 'pnpm-lock.yaml'), 'utf8')).resolves.toBe('lockfileVersion: 9.0\n')
+    } finally {
+      await rm(tempDirectory, { recursive: true, force: true })
+      vi.mocked(downloadTemplate).mockReset()
     }
   })
 })

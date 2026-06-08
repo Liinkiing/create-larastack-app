@@ -51,8 +51,6 @@ export async function generateProject(config: GenerationConfig): Promise<Generat
   await replaceTemplateTokens(config.targetDirectory, replacements)
   await applyStructuredUpdates(config, replacementContext)
 
-  await rm(join(config.targetDirectory, 'pnpm-lock.yaml'), { force: true })
-
   const warnings: string[] = []
   if (config.initializeGit) {
     const gitReady = initializeGitRepository(config.targetDirectory)
