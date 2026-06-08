@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.11.3](https://github.com/Liinkiing/create-larastack-app/compare/v0.11.2...v0.11.3) (2026-06-08)
+
+### Bug Fixes
+
+- remove mobile API route group ([1c99963](https://github.com/Liinkiing/create-larastack-app/commit/1c999630f80602a4f994fe1776083e371e4327fd))
+
 ## [0.11.2](https://github.com/Liinkiing/create-larastack-app/compare/v0.11.1...v0.11.2) (2026-06-08)
 
 ### Bug Fixes
