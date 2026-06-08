@@ -262,9 +262,9 @@ async function assertBackendBehavior(tempDirectory: string, selectedAppsSet: Set
     const apiRoutes = await readFile(join(tempDirectory, 'backend/routes/api.php'), 'utf8')
 
     await assertCondition(
-      !apiRoutes.includes('/auth/apple/mobile') &&
-        !apiRoutes.includes('/auth/google/mobile') &&
-        !apiRoutes.includes('/auth/mobile/logout'),
+      !apiRoutes.includes("Route::post('/auth/apple'") &&
+        !apiRoutes.includes("Route::post('/auth/google'") &&
+        !apiRoutes.includes("Route::post('/auth/logout'"),
       'API routes should remove mobile auth routes when mobile app is not selected.',
     )
     await assertCondition(

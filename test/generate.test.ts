@@ -204,6 +204,95 @@ class User
     }
   })
 
+  it('removes mobile auth routes from prefixed API route groups', async () => {
+    const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
+
+    try {
+      await mkdir(join(tempDirectory, '.create-larastack'), { recursive: true })
+      await mkdir(join(tempDirectory, 'backend', 'routes'), { recursive: true })
+
+      const apiRoutesPath = join(tempDirectory, 'backend', 'routes', 'api.php')
+
+      await writeFile(
+        apiRoutesPath,
+        `<?php
+
+use App\\Http\\Controllers\\Auth\\MobileAppleAuthController;
+use App\\Http\\Controllers\\Auth\\MobileGoogleAuthController;
+use App\\Http\\Controllers\\Auth\\MobileTokenController;
+use Illuminate\\Http\\Request;
+use Illuminate\\Support\\Facades\\Route;
+
+Route::group(['prefix' => 'mobile'], static function () {
+    Route::post('/auth/apple', MobileAppleAuthController::class)
+        ->middleware('throttle:30,1');
+
+    Route::post('/auth/google', MobileGoogleAuthController::class)
+        ->middleware('throttle:30,1');
+
+    Route::post('/auth/logout', [MobileTokenController::class, 'destroy'])
+        ->middleware('auth:sanctum');
+
+    Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+        return $request->user()->only([
+            'id',
+            'name',
+            'email',
+            'avatar_url',
+        ]);
+    });
+});
+`,
+        'utf8',
+      )
+
+      await writeFile(
+        join(tempDirectory, '.create-larastack', 'rules.json'),
+        JSON.stringify(
+          {
+            version: 1,
+            rules: [
+              {
+                id: 'transform-api-routes',
+                when: {
+                  allOf: [{ appSelected: 'backend' }, { appNotSelected: 'mobile' }],
+                },
+                operations: [
+                  {
+                    type: 'transform',
+                    path: 'backend/routes/api.php',
+                    transform: 'php.routes.api.applyProfile',
+                    options: {
+                      profile: 'no-mobile',
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+          null,
+          2,
+        ),
+        'utf8',
+      )
+
+      await applyConditionalFileRules(tempDirectory, ['backend'])
+
+      const output = await readFile(apiRoutesPath, 'utf8')
+
+      expect(output).not.toContain('MobileAppleAuthController')
+      expect(output).not.toContain('MobileGoogleAuthController')
+      expect(output).not.toContain('MobileTokenController')
+      expect(output).not.toContain("Route::post('/auth/apple'")
+      expect(output).not.toContain("Route::post('/auth/google'")
+      expect(output).not.toContain("Route::post('/auth/logout'")
+      expect(output).toContain("Route::group(['prefix' => 'mobile']")
+      expect(output).toContain("Route::middleware('auth:sanctum')->get('/user'")
+    } finally {
+      await rm(tempDirectory, { recursive: true, force: true })
+    }
+  })
+
   it('applies graphql transform based on selected apps', async () => {
     const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
 

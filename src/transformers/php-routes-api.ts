@@ -32,7 +32,7 @@ export const transformPhpRoutesApi: Transformer = async ({ filePath, options, ru
         'App\\Http\\Controllers\\Auth\\MobileGoogleAuthController',
         'App\\Http\\Controllers\\Auth\\MobileTokenController',
       ])
-      removeRouteStatements(source, magic, ast, ['/auth/apple/mobile', '/auth/google/mobile', '/auth/mobile/logout'])
+      removeRouteStatements(source, magic, ast, ['/auth/apple', '/auth/google', '/auth/logout'])
 
       output = magic.toString()
       break
