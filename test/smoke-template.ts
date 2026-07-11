@@ -208,6 +208,18 @@ async function assertBackendBehavior(tempDirectory: string, selectedAppsSet: Set
   const mobileControllerExists = await pathExists(
     join(tempDirectory, 'backend/app/Http/Controllers/Auth/MobileGoogleAuthController.php'),
   )
+  const mobileSupportFileStates = await Promise.all(
+    [
+      'backend/app/Actions/AuthenticateMobileApple.php',
+      'backend/app/Actions/AuthenticateMobileGoogle.php',
+      'backend/app/Actions/IssueMobileToken.php',
+      'backend/app/Data/MobileAuthentication.php',
+    ].map(path => pathExists(join(tempDirectory, path))),
+  )
+  const mobileAuthTestExists = await pathExists(join(tempDirectory, 'backend/tests/Feature/MobileAuthTest.php'))
+  const webActionExists = await pathExists(join(tempDirectory, 'backend/app/Actions/ConnectGoogleAccount.php'))
+  const webOAuthTestExists = await pathExists(join(tempDirectory, 'backend/tests/Feature/WebOAuthTest.php'))
+  const sessionLoginTestExists = await pathExists(join(tempDirectory, 'backend/tests/Feature/SessionLoginTest.php'))
   const personalAccessMigrationExists = await pathExists(
     join(tempDirectory, 'backend/database/migrations/0001_01_01_000004_create_personal_access_tokens_table.php'),
   )
@@ -219,6 +231,11 @@ async function assertBackendBehavior(tempDirectory: string, selectedAppsSet: Set
     )
     await assertCondition(!mobileControllerExists, 'Mobile auth controller should be removed without mobile app.')
     await assertCondition(
+      !mobileSupportFileStates.some(Boolean),
+      'Mobile auth support files should be removed without mobile app.',
+    )
+    await assertCondition(!mobileAuthTestExists, 'Mobile auth tests should be removed without mobile app.')
+    await assertCondition(
       !personalAccessMigrationExists,
       'Personal access token migration should be removed without mobile app.',
     )
@@ -229,6 +246,11 @@ async function assertBackendBehavior(tempDirectory: string, selectedAppsSet: Set
     )
     await assertCondition(mobileControllerExists, 'Mobile auth controller should exist with mobile app selected.')
     await assertCondition(
+      mobileSupportFileStates.every(Boolean),
+      'Mobile auth support files should exist with mobile app selected.',
+    )
+    await assertCondition(mobileAuthTestExists, 'Mobile auth tests should exist with mobile app selected.')
+    await assertCondition(
       personalAccessMigrationExists,
       'Personal access token migration should exist with mobile app selected.',
     )
@@ -236,6 +258,9 @@ async function assertBackendBehavior(tempDirectory: string, selectedAppsSet: Set
 
   if (!hasFrontend) {
     await assertCondition(!oauthControllerExists, 'OAuth controller should be removed without frontend app.')
+    await assertCondition(!webActionExists, 'Web OAuth action should be removed without frontend app.')
+    await assertCondition(!webOAuthTestExists, 'Web OAuth tests should be removed without frontend app.')
+    await assertCondition(!sessionLoginTestExists, 'Session login tests should be removed without frontend app.')
 
     const webRoutes = await readFile(join(tempDirectory, 'backend/routes/web.php'), 'utf8')
     await assertCondition(
@@ -244,6 +269,9 @@ async function assertBackendBehavior(tempDirectory: string, selectedAppsSet: Set
     )
   } else {
     await assertCondition(oauthControllerExists, 'OAuth controller should exist when frontend app is selected.')
+    await assertCondition(webActionExists, 'Web OAuth action should exist when frontend app is selected.')
+    await assertCondition(webOAuthTestExists, 'Web OAuth tests should exist when frontend app is selected.')
+    await assertCondition(sessionLoginTestExists, 'Session login tests should exist when frontend app is selected.')
   }
 
   if (!hasFrontend && !hasMobile) {
