@@ -31,6 +31,12 @@ export const transformPhpUser: Transformer = async ({ filePath, options, ruleId 
     }
 
     case 'backend-only': {
+      removeArrayEntriesFromUserProperty(source, magic, classNode, 'fillable', [
+        'google_id',
+        'google_token',
+        'google_refresh_token',
+        'apple_id',
+      ])
       removeArrayEntriesFromUserProperty(source, magic, classNode, 'hidden', ['google_token', 'google_refresh_token'])
       removeArrayEntriesFromUserCasts(source, magic, classNode, ['google_token', 'google_refresh_token'])
       break

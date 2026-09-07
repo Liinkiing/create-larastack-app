@@ -247,6 +247,103 @@ class User
     }
   })
 
+  it('removes social authentication attributes from backend-only users', async () => {
+    const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
+
+    try {
+      await mkdir(join(tempDirectory, '.create-larastack'), { recursive: true })
+      await mkdir(join(tempDirectory, 'backend', 'app', 'Models'), { recursive: true })
+
+      const userModelPath = join(tempDirectory, 'backend', 'app', 'Models', 'User.php')
+
+      await writeFile(
+        userModelPath,
+        `<?php
+
+namespace App\\Models;
+
+use Laravel\\Sanctum\\HasApiTokens;
+
+class User
+{
+    use HasApiTokens;
+
+    protected $fillable = [
+        'name',
+        'email',
+        'google_id',
+        'google_token',
+        'google_refresh_token',
+        'apple_id',
+    ];
+
+    protected $hidden = [
+        'password',
+        'google_token',
+        'google_refresh_token',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'google_token' => 'encrypted',
+            'google_refresh_token' => 'encrypted',
+            'password' => 'hashed',
+        ];
+    }
+}
+`,
+        'utf8',
+      )
+
+      await writeFile(
+        join(tempDirectory, '.create-larastack', 'rules.json'),
+        JSON.stringify(
+          {
+            version: 1,
+            rules: [
+              {
+                id: 'transform-backend-only-user-model',
+                when: {
+                  allOf: [{ appSelected: 'backend' }, { appNotSelected: 'frontend' }, { appNotSelected: 'mobile' }],
+                },
+                operations: [
+                  {
+                    type: 'transform',
+                    path: 'backend/app/Models/User.php',
+                    transform: 'php.user.applyProfile',
+                    options: {
+                      profile: 'backend-only',
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+          null,
+          2,
+        ),
+        'utf8',
+      )
+
+      await applyConditionalFileRules(tempDirectory, ['backend'])
+
+      const output = await readFile(userModelPath, 'utf8')
+
+      expect(output).not.toContain('Laravel\\Sanctum\\HasApiTokens')
+      expect(output).not.toContain('HasApiTokens')
+      expect(output).not.toContain('google_id')
+      expect(output).not.toContain('google_token')
+      expect(output).not.toContain('google_refresh_token')
+      expect(output).not.toContain('apple_id')
+      expect(output).toContain("'name'")
+      expect(output).toContain("'email'")
+      expect(output).toContain("'password' => 'hashed'")
+    } finally {
+      await rm(tempDirectory, { recursive: true, force: true })
+    }
+  })
+
   it('removes prefixed mobile API route groups', async () => {
     const tempDirectory = await mkdtemp(join(tmpdir(), 'create-larastack-'))
 
