@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.11.4](https://github.com/Liinkiing/create-larastack-app/compare/v0.11.3...v0.11.4) (2026-09-07)
+
+### Bug Fixes
+
+- clean social fields from backend-only users ([2f50a00](https://github.com/Liinkiing/create-larastack-app/commit/2f50a000f7f96aa05b745738a826e2dd6c00a6b7))
+
 ## [0.11.3](https://github.com/Liinkiing/create-larastack-app/compare/v0.11.2...v0.11.3) (2026-06-08)
 
 ### Bug Fixes
